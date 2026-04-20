@@ -1,0 +1,34 @@
+{
+  "repo": "microsoft/onnxruntime",
+  "layer": "integration_serving",
+  "status": "selected",
+  "ecosystems_detected": "python",
+  "direct_total": 12,
+  "transitive_total": 4,
+  "method": "python:uv_pip_compile",
+  "direct_deps": [
+    "cerberus",
+    "flatbuffers",
+    "h5py",
+    "numpy",
+    "onnx",
+    "packaging",
+    "protobuf",
+    "setuptools",
+    "sphinx",
+    "sphinx_gallery",
+    "sphinx_rtd_theme",
+    "sympy"
+  ],
+  "transitive_deps_python": [
+    "flatbuffers==25.12.19",
+    "numpy==2.4.4",
+    "packaging==26.0",
+    "protobuf==7.34.1"
+  ],
+  "transitive_deps_go": [],
+  "transitive_deps_cargo": [],
+  "transitive_deps_npm": [],
+  "transitive_deps_maven": [],
+  "transitive_deps_gradle": []
+}

@@ -1,0 +1,228 @@
+{
+  "canvas": [
+    1800,
+    1200
+  ],
+  "scale_by_loc": true,
+  "show_transitive_loc": true,
+  "layer_boxes": {
+    "data_pipelines": [
+      20.0,
+      20.0,
+      501.0,
+      420.0
+    ],
+    "training": [
+      521.0,
+      20.0,
+      1277.0,
+      459.0
+    ],
+    "integration_serving": [
+      1297.0,
+      20.0,
+      1778.0,
+      467.0
+    ],
+    "cross_cutting": [
+      20.0,
+      492.0,
+      1780.0,
+      771.0
+    ]
+  },
+  "positions": {
+    "repo:minio/minio": [
+      139.44607323814583,
+      98.78756098150765
+    ],
+    "repo:apache/kafka": [
+      378.4642333653332,
+      102.78756098150765
+    ],
+    "repo:apache/airflow": [
+      377.4460732381458,
+      173.41648857394216
+    ],
+    "repo:apache/spark": [
+      137.05392676185414,
+      169.41648857394216
+    ],
+    "repo:HumanSignal/label-studio": [
+      137.4460732381458,
+      241.02237274974993
+    ],
+    "repo:great-expectations/great_expectations": [
+      376.4642333653332,
+      241.0223727497499
+    ],
+    "repo:iterative/dvc": [
+      137.44607323814583,
+      299.64437347909194
+    ],
+    "repo:UKPLab/sentence-transformers": [
+      374.4642333653332,
+      301.64437347909194
+    ],
+    "repo:milvus-io/milvus": [
+      251.35500299517912,
+      365.2509283217766
+    ],
+    "repo:kubeflow/pipelines": [
+      666.7359781449662,
+      88.09734183082193
+    ],
+    "repo:SchedMD/slurm": [
+      905.9762559697837,
+      86.09734183082193
+    ],
+    "repo:NVIDIA/nvidia-container-toolkit": [
+      1141.2402778248174,
+      86.09734183082193
+    ],
+    "repo:NVIDIA/cuda-python": [
+      656.7359781449662,
+      155.76790896051895
+    ],
+    "repo:NVIDIA/nccl": [
+      889.9762559697837,
+      156.76790896051895
+    ],
+    "repo:pytorch/pytorch": [
+      1132.2402778248174,
+      161.76790896051895
+    ],
+    "repo:microsoft/DeepSpeed": [
+      655.7359781449662,
+      224.86951335641822
+    ],
+    "repo:NVIDIA/Megatron-LM": [
+      889.9762559697837,
+      224.86951335641822
+    ],
+    "repo:huggingface/tokenizers": [
+      1123.2402778248174,
+      226.86951335641822
+    ],
+    "repo:huggingface/datasets": [
+      661.7359781449662,
+      292.6487347778938
+    ],
+    "repo:huggingface/peft": [
+      889.9762559697837,
+      288.6487347778938
+    ],
+    "repo:huggingface/trl": [
+      1124.2402778248174,
+      286.6487347778938
+    ],
+    "repo:EleutherAI/lm-evaluation-harness": [
+      660.7359781449662,
+      354.0641692048573
+    ],
+    "repo:arcee-ai/mergekit": [
+      889.9762559697837,
+      353.0641692048573
+    ],
+    "repo:mlflow/mlflow": [
+      1132.2402778248174,
+      352.0641692048573
+    ],
+    "repo:huggingface/huggingface_hub": [
+      775.8114045647188,
+      420.36716269411755
+    ],
+    "repo:huggingface/transformers": [
+      1031.0516823895364,
+      419.36716269411755
+    ],
+    "repo:onnx/onnx": [
+      1416.114556316388,
+      84.82448566452965
+    ],
+    "repo:mit-han-lab/llm-awq": [
+      1649.9166058303158,
+      86.82448566452965
+    ],
+    "repo:vllm-project/vllm": [
+      1416.114556316388,
+      149.3987886723593
+    ],
+    "repo:NVIDIA/TensorRT-LLM": [
+      1648.9166058303158,
+      149.3987886723593
+    ],
+    "repo:triton-inference-server/server": [
+      1407.114556316388,
+      219.0799114033366
+    ],
+    "repo:microsoft/onnxruntime": [
+      1646.9166058303158,
+      220.0799114033366
+    ],
+    "repo:ray-project/ray": [
+      1416.114556316388,
+      288.89068755515933
+    ],
+    "repo:envoyproxy/envoy": [
+      1651.9166058303158,
+      287.89068755515933
+    ],
+    "repo:langchain-ai/langchain": [
+      1412.114556316388,
+      358.4578267842956
+    ],
+    "repo:microsoft/promptflow": [
+      1648.9166058303158,
+      357.4578267842956
+    ],
+    "repo:guardrails-ai/guardrails": [
+      1537.5,
+      422.9195948038855
+    ],
+    "repo:kubernetes/kubernetes": [
+      357.8957242382281,
+      555.3814863078903
+    ],
+    "repo:containerd/containerd": [
+      742.9458412043939,
+      548.3814863078903
+    ],
+    "repo:hashicorp/terraform": [
+      1085.9012270910312,
+      550.3814863078903
+    ],
+    "repo:argoproj/argo-cd": [
+      1450.5055028528031,
+      554.3814863078903
+    ],
+    "repo:argoproj/argo-workflows": [
+      432.8957242382281,
+      624.5618979519061
+    ],
+    "repo:prometheus/prometheus": [
+      746.9458412043939,
+      622.5618979519061
+    ],
+    "repo:grafana/grafana": [
+      1290.9012270910312,
+      694.5618979519061
+    ],
+    "repo:open-telemetry/opentelemetry-collector": [
+      1443.5055028528031,
+      615.5618979519061
+    ],
+    "repo:grafana/loki": [
+      507.04461411336274,
+      698.7608232880317
+    ],
+    "repo:torvalds/linux": [
+      910.0947310795284,
+      701.6
+    ],
+    "repo:NVIDIA/open-gpu-kernel-modules": [
+      1081.0501169661657,
+      618.7608232880317
+    ]
+  }
+}

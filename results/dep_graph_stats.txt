@@ -1,0 +1,43 @@
+=== Dependency Graph Summary ===
+project nodes:        48
+package nodes:        2316
+edges (total):        4563
+edges (cross-stack):  484
+
+Edges by ecosystem:
+  go           3621
+  python       919
+  cpp          23
+
+Shared packages (fan-in >= 2): 574
+Top 30 most-shared packages:
+  [go      ] github.com/davecgh/go-spew           used by 12: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] golang.org/x/sys                     used by 12: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] google.golang.org/genproto/googleapis/rpc  used by 12: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] google.golang.org/grpc               used by 12: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] google.golang.org/protobuf           used by 12: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] gopkg.in/yaml.v3                     used by 12: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] github.com/google/uuid               used by 11: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/net                     used by 11: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [python  ] numpy                                used by 11: EleutherAI/lm-evaluation-harness, HumanSignal/label-studio, NVIDIA/Megatron-LM, NVIDIA/TensorRT-LLM, UKPLab/sentence-transformers, great-expectations/great_expectations, huggingface/peft, microsoft/onnxruntime, mlflow/mlflow, onnx/onnx, vllm-project/vllm
+  [go      ] github.com/cespare/xxhash/v2         used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/felixge/httpsnoop         used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/go-logr/logr              used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/go-logr/stdr              used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/gogo/protobuf             used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/golang/protobuf           used by 10: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio
+  [go      ] github.com/json-iterator/go          used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/modern-go/concurrent      used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/modern-go/reflect2        used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/munnerz/goautoneg         used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/crypto                  used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/mod                     used by 10: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/oauth2                  used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/sync                    used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/term                    used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/text                    used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] golang.org/x/time                    used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] google.golang.org/genproto/googleapis/api  used by 10: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, hashicorp/terraform, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus
+  [go      ] github.com/pmezard/go-difflib        used by 10: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, kubernetes/kubernetes, milvus-io/milvus, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] github.com/stretchr/testify          used by 10: NVIDIA/nvidia-container-toolkit, argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, kubernetes/kubernetes, milvus-io/milvus, open-telemetry/opentelemetry-collector, prometheus/prometheus
+  [go      ] github.com/beorn7/perks              used by 9: argoproj/argo-cd, argoproj/argo-workflows, containerd/containerd, grafana/grafana, grafana/loki, kubernetes/kubernetes, milvus-io/milvus, minio/minio, prometheus/prometheus

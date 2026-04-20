@@ -1,0 +1,5 @@
+layer,projects,total_loc,num_languages,direct_deps,num_ecosystems
+data_pipelines,9,8080596,59,882,4
+training,17,10949309,68,452,3
+integration_serving,11,12554262,74,309,4
+cross_cutting,11,51022464,83,3021,2

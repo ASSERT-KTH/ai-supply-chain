@@ -1,0 +1,58 @@
+
+════════════════════════════════════════════════════════════════════
+  LOC Measurement — Tue Apr  7 18:31:19 CEST 2026
+════════════════════════════════════════════════════════════════════
+  Measured:              48 / 48
+  Skipped:               0
+  Failed:                0
+  Elapsed:               00:00:05
+
+  Code lines by layer (excl. generated):
+  Layer                           Code lines     Files
+  ─────────────────────────────  ──────────  ──────
+  data_pipelines                   8,080,596    44,730
+  training                        10,949,309    53,096
+  integration_serving             12,554,262    49,454
+  cross_cutting                   51,022,464   167,070
+  ─────────────────────────────  ──────────  ──────
+  TOTAL (direct deps only)        82,606,631   314,350
+
+  Largest repos by code lines (top 10):
+      31,568,926  torvalds/linux
+       7,554,716  grafana/loki
+       4,165,826  kubernetes/kubernetes
+       4,041,209  microsoft/onnxruntime
+       3,488,015  grafana/grafana
+       3,241,577  pytorch/pytorch
+       2,689,858  microsoft/promptflow
+       2,127,481  apache/spark
+       1,852,613  kubeflow/pipelines
+       1,633,154  NVIDIA/open-gpu-kernel-modules
+
+  Languages present (top 15 by total code lines):
+      21,138,050  C
+      13,555,743  Go
+       9,640,363  C Header
+       9,441,377  Python
+       5,822,807  JSON
+       5,415,624  C++
+       3,934,068  YAML
+       1,795,997  TypeScript
+       1,639,312  Device Tree
+       1,356,210  Markdown
+       1,307,978  Scala
+       1,185,449  Java
+         908,540  ReStructuredText
+         810,108  Plain Text
+         732,234  CSV
+
+  ⚠  Scope: direct dependencies only (82,606,631 lines across 48 repos).
+     Transitive dependencies are NOT included here — see 03_count_deps.sh.
+     Expected transitive count: 10-100x more packages, likely 10-50x more LOC.
+
+  Outputs:
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/loc_summary.csv
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/loc_per_project/  (per-project JSON)
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/loc_report.tsv
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/loc_summary.txt
+════════════════════════════════════════════════════════════════════

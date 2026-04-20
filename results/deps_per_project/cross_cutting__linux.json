@@ -1,0 +1,16 @@
+{
+  "repo": "torvalds/linux",
+  "layer": "cross_cutting",
+  "status": "selected",
+  "ecosystems_detected": "",
+  "direct_total": 0,
+  "transitive_total": -1,
+  "method": "none",
+  "direct_deps": [],
+  "transitive_deps_python": [],
+  "transitive_deps_go": [],
+  "transitive_deps_cargo": [],
+  "transitive_deps_npm": [],
+  "transitive_deps_maven": [],
+  "transitive_deps_gradle": []
+}

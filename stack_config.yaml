@@ -1,0 +1,764 @@
+# =============================================================================
+# Hypothetical AI System Software Stack
+# =============================================================================
+#
+# This file defines a plausible production software stack for a compound AI
+# system, organized by the infrastructure layers described in the paper.
+#
+# Each entry includes:
+#   - repo: GitHub repository (owner/name)
+#   - role: what it does in the stack
+#   - status: "selected" (included in baseline measurement) or
+#             "alternative" (plausible substitute; pick one per role)
+#   - notes: additional context
+#
+# INSTRUCTIONS FOR EDITING:
+#   1. Review each layer and ensure the "selected" projects form a coherent stack.
+#   2. Where multiple alternatives exist, keep one as "selected" and mark
+#      the rest as "alternative". The scripts will only measure "selected" repos.
+#   3. Add or remove projects as needed to match your target architecture.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Layer 1: Data Pipelines
+# Produces and maintains data artifacts consumed by training and inference.
+# -----------------------------------------------------------------------------
+data_pipelines:
+  description: >
+    Upstream data production: ingestion, preprocessing, dataset construction,
+    retrieval corpus building, and vector indexing.
+
+  projects:
+    # -- Object storage --
+    - repo: minio/minio
+      role: Object storage for datasets and model artifacts (S3-compatible)
+      status: selected
+      languages: [Go]
+      notes: Open-source S3-compatible object store; on-premise backend for datasets, checkpoints, and retrieval corpora
+      usage_ref: https://blog.min.io/minio-and-ray-object-store/
+
+    # -- Message brokers / streaming --
+    - repo: apache/kafka
+      role: Stream ingestion and message brokering
+      status: selected
+      languages: [Java, Scala]
+      notes: Core data ingestion infrastructure
+      usage_ref: https://www.confluent.io/blog/using-apache-kafka-drive-cutting-edge-machine-learning/
+
+    - repo: apache/pulsar
+      role: Stream ingestion and message brokering
+      status: alternative
+      languages: [Java]
+      notes: Alternative to Kafka; used in some ML pipelines
+      usage_ref: https://streamnative.io/blog/case-study-apache-pulsar-as-the-event-driven-backbone-of-trustgraph
+
+    # -- Workflow orchestration --
+    - repo: apache/airflow
+      role: Workflow orchestration for data pipelines
+      status: selected
+      languages: [Python]
+      notes: DAG-based scheduling and monitoring
+      usage_ref: https://www.astronomer.io/blog/airflow-in-action-openai/
+
+    - repo: PrefectHQ/prefect
+      role: Workflow orchestration for data pipelines
+      status: alternative
+      languages: [Python]
+      notes: Alternative to Airflow; Python-native orchestration
+      usage_ref: https://www.prefect.io/blog/transactional-ml-pipelines-with-prefect-3-0
+
+    - repo: dagster-io/dagster
+      role: Workflow orchestration for data pipelines
+      status: alternative
+      languages: [Python]
+      notes: Alternative to Airflow; asset-based orchestration
+      usage_ref: https://medium.com/@dagster-io/machine-learning-pipelines-for-fine-tuning-llms-dagster-blog-60fecaeb348f
+
+    # -- Distributed data processing --
+    - repo: apache/spark
+      role: Distributed data processing
+      status: selected
+      languages: [Scala, Java, Python, R]
+      notes: Large-scale data preprocessing and feature engineering
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/super-charge-your-llms-with-rag-at-scale-using-aws-glue-for-apache-spark/
+
+    - repo: apache/beam
+      role: Distributed data processing
+      status: alternative
+      languages: [Java, Python, Go]
+      notes: Unified batch/streaming; used with Dataflow
+      usage_ref: https://medium.com/walmartglobaltech/building-a-scalable-llm-pipeline-with-apache-beam-and-dataflow-be5681f4ee18
+
+    - repo: dask/dask
+      role: Distributed data processing
+      status: alternative
+      languages: [Python]
+      notes: Python-native parallel computing; lighter than Spark
+      usage_ref: https://www.iguazio.com/blog/handling-large-datasets-with-mlops-dask-on-kubernetes/
+
+    # -- Data annotation --
+    - repo: HumanSignal/label-studio
+      role: Data annotation and labeling
+      status: selected
+      languages: [Python, JavaScript]
+      notes: Human-in-the-loop labeling for supervised fine-tuning and RLHF preference datasets; produces labeled dataset artifacts
+      usage_ref: https://labelstud.io/blog/introduction-to-label-studio/
+
+    # -- Data validation --
+    - repo: great-expectations/great_expectations
+      role: Data validation and quality
+      status: selected
+      languages: [Python]
+      notes: Data quality checks in preprocessing pipelines
+      usage_ref: https://greatexpectations.io/case-studies/how-avanade-uses-gx-to-detect-data-drift-from-upstream-model-changes-in/
+
+    # -- Dataset versioning --
+    - repo: iterative/dvc
+      role: Dataset versioning and lineage
+      status: selected
+      languages: [Python]
+      notes: Git-like versioning for data artifacts
+      usage_ref: https://dvc.org/blog/finetune-llm-pipeline-dvc-skypilot/
+
+    - repo: treeverse/lakeFS
+      role: Dataset versioning and lineage
+      status: alternative
+      languages: [Go]
+      notes: Git-like operations on object storage
+      usage_ref: https://www.redhat.com/en/blog/experiment-production-reliable-architecture-version-controlled-mlops
+
+    # -- Embedding models --
+    - repo: UKPLab/sentence-transformers
+      role: Embedding model library for retrieval corpus construction
+      status: selected
+      languages: [Python]
+      notes: Generates dense vector representations for RAG pipelines; required upstream step before indexing into a vector database
+      usage_ref: https://sbert.net/docs/sentence_transformer/usage/usage.html
+
+    # -- Vector databases --
+    - repo: milvus-io/milvus
+      role: Vector database
+      status: selected
+      languages: [Go, C++]
+      notes: Distributed production vector DB; the realistic choice for a serving-scale RAG stack
+      usage_ref: https://milvus.io/use-cases
+
+    - repo: facebookresearch/faiss
+      role: Vector similarity search library
+      status: alternative
+      languages: [C++, Python]
+      notes: In-process similarity search library; used embedded or as a dependency of vector DBs (Milvus uses FAISS internally); not a production database
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/deploy-rag-applications-on-amazon-sagemaker-jumpstart-using-faiss/
+
+    - repo: weaviate/weaviate
+      role: Vector database
+      status: alternative
+      languages: [Go]
+      notes: Vector search engine with built-in ML model support
+      usage_ref: https://weaviate.io/case-studies/kapa
+
+    - repo: chroma-core/chroma
+      role: Vector database
+      status: alternative
+      languages: [Python, Rust]
+      notes: Lightweight embedding database; popular in LLM apps
+      usage_ref: https://www.trychroma.com/customers/propel-ai-case-study
+
+# -----------------------------------------------------------------------------
+# Layer 2: Model Development and Training Infrastructure
+# Produces model artifacts: checkpoints, tokenizers, evaluation reports.
+# -----------------------------------------------------------------------------
+training:
+  description: >
+    ML frameworks, distributed training, experiment tracking,
+    and model registries.
+
+  projects:
+    # -- Workflow orchestration --
+    - repo: kubeflow/pipelines
+      role: ML workflow orchestration for training pipelines
+      status: selected
+      languages: [Python, Go]
+      notes: Kubernetes-native DAG orchestration for training and evaluation steps; separates ML pipeline scheduling from general data pipeline scheduling (Airflow)
+      usage_ref: https://www.kubeflow.org/docs/components/pipelines/overview/
+
+    # -- Compute substrate --
+    # Job scheduling, GPU access, and inter-GPU communication: the physical execution environment.
+    - repo: SchedMD/slurm
+      role: HPC cluster job scheduling
+      status: selected
+      languages: [C]
+      notes: Widely used workload manager for GPU training clusters on bare-metal HPC; counterpart to Kubernetes for non-containerized training environments; named explicitly in paper
+      usage_ref: https://slurm.schedmd.com/documentation.html
+
+    - repo: NVIDIA/nvidia-container-toolkit
+      role: GPU-enabled container runtime support
+      status: selected
+      languages: [Go]
+      notes: Enables NVIDIA GPU access inside containers; required for all GPU workloads on Kubernetes and containerd
+      usage_ref: https://developer.nvidia.com/blog/scaling-llms-with-nvidia-triton-and-nvidia-tensorrt-llm-using-kubernetes/
+
+    - repo: NVIDIA/cuda-python
+      role: GPU compute runtime (Python bindings for CUDA)
+      status: selected
+      languages: [Python, C++, CUDA]
+      notes: >
+        CUDA itself is proprietary and has no public source repo; cuda-python is
+        the official Python interface. The runtime is a universal dependency of
+        all GPU-based ML workloads.
+      usage_ref: https://developer.nvidia.com/blog/scaling-llms-with-nvidia-triton-and-nvidia-tensorrt-llm-using-kubernetes/
+
+    - repo: openxla/xla
+      role: Accelerated linear algebra compiler (TPU/GPU)
+      status: alternative
+      languages: [C++, Python]
+      notes: XLA is the compiler backend for JAX and TensorFlow; used by Google/DeepMind for TPU training
+      usage_ref: https://developers.googleblog.com/building-production-ai-on-google-cloud-tpus-with-jax/
+
+    - repo: NVIDIA/nccl
+      role: GPU communication primitives
+      status: selected
+      languages: [C++, CUDA]
+      notes: Multi-GPU gradient synchronization
+      usage_ref: https://developer.nvidia.com/blog/using-deepspeed-and-megatron-to-train-megatron-turing-nlg-530b-the-worlds-largest-and-most-powerful-generative-language-model/
+
+    # -- ML frameworks --
+    - repo: pytorch/pytorch
+      role: Core ML framework
+      status: selected
+      languages: [C++, Python, CUDA, C]
+      notes: Dominant framework for LLM training. Meta describes the training system for Llama as a PyTorch-based stack
+      usage_ref: https://dl.acm.org/doi/10.1145/3695053.3731410
+
+    - repo: tensorflow/tensorflow
+      role: Core ML framework
+      status: alternative
+      languages: [C++, Python, CUDA]
+      notes: Alternative framework; strong in production/TPU. Gemini was developed using infrastructure built on TensorFlow
+      usage_ref: https://arxiv.org/abs/2312.11805
+
+    - repo: jax-ml/jax
+      role: Core ML framework
+      status: alternative
+      languages: [Python, C++]
+      notes: Functional ML framework; used by Google research
+      usage_ref: https://developers.googleblog.com/building-production-ai-on-google-cloud-tpus-with-jax/
+
+    # -- Distributed training --
+    - repo: microsoft/DeepSpeed
+      role: Distributed training and optimization
+      status: selected
+      languages: [Python, C++, CUDA]
+      notes: ZeRO optimizer, pipeline parallelism
+      usage_ref: https://developer.nvidia.com/blog/using-deepspeed-and-megatron-to-train-megatron-turing-nlg-530b-the-worlds-largest-and-most-powerful-generative-language-model/
+
+    - repo: NVIDIA/Megatron-LM
+      role: Large-scale distributed training
+      status: selected
+      languages: [Python, CUDA]
+      notes: Tensor/pipeline parallelism for LLMs
+      usage_ref: https://developer.nvidia.com/blog/using-deepspeed-and-megatron-to-train-megatron-turing-nlg-530b-the-worlds-largest-and-most-powerful-generative-language-model/
+
+    - repo: pytorch/torchtitan
+      role: Distributed training reference
+      status: alternative
+      languages: [Python]
+      notes: PyTorch-native distributed training; newer alternative
+      usage_ref: https://arxiv.org/html/2410.06511v1
+
+    # -- Data preparation --
+    # Tokenization and dataset loading: prepares data for the training loop.
+    - repo: huggingface/tokenizers
+      role: Tokenizer library
+      status: selected
+      languages: [Rust, Python]
+      notes: Fast tokenizer implementations; paired with Transformers
+      usage_ref: https://github.com/philschmid/deep-learning-pytorch-huggingface/blob/main/training/rl-with-llms-in-2025-dpo.ipynb
+
+    - repo: huggingface/datasets
+      role: Dataset loading and processing for training
+      status: selected
+      languages: [Python]
+      notes: Efficient dataset access for training loops
+      usage_ref: https://arxiv.org/abs/2109.02846
+
+    # -- Fine-tuning --
+    - repo: huggingface/peft
+      role: Parameter-efficient fine-tuning (LoRA, QLoRA)
+      status: selected
+      languages: [Python]
+      notes: LoRA and adapter-based fine-tuning; reduces GPU memory requirements for adapting pretrained checkpoints; fine-tuning is a named transformation in Table 2
+      usage_ref: https://huggingface.co/blog/peft
+
+    - repo: huggingface/trl
+      role: Alignment fine-tuning (SFT, DPO, RLHF)
+      status: selected
+      languages: [Python]
+      notes: Supervised fine-tuning, DPO, PPO-based RLHF; calls PEFT under the hood; complementary to PEFT, not an alternative — a complete fine-tuning workflow uses both
+      usage_ref: https://huggingface.co/docs/trl/index
+
+    # -- Model evaluation --
+    - repo: EleutherAI/lm-evaluation-harness
+      role: Model evaluation framework
+      status: selected
+      languages: [Python]
+      notes: Standardized benchmark evaluation across hundreds of tasks; produces the evaluation report artifacts named in Table 1
+      usage_ref: https://github.com/EleutherAI/lm-evaluation-harness
+
+    # -- Checkpoint merging --
+    - repo: arcee-ai/mergekit
+      role: Model checkpoint merging
+      status: selected
+      languages: [Python]
+      notes: Merges multiple model checkpoints via TIES, DARE, SLERP strategies; checkpoint merging is a named transformation in Table 2
+      usage_ref: https://arxiv.org/abs/2306.01708
+
+    # -- Artifact management --
+    # Experiment tracking, model registry, and distribution: records and publishes training outputs.
+    - repo: mlflow/mlflow
+      role: Experiment tracking and model registry
+      status: selected
+      languages: [Python, JavaScript, Java]
+      notes: Tracks runs, parameters, metrics, and artifacts
+      usage_ref: https://www.databricks.com/blog/building-responsible-and-calibrated-ai-agents-databricks-and-mlflow-real-world-use-case-deep
+
+    - repo: wandb/wandb
+      role: Experiment tracking
+      status: alternative
+      languages: [Python]
+      notes: Alternative to MLflow; SaaS-oriented
+      usage_ref: https://wandb.ai/site/customers/
+
+    - repo: huggingface/huggingface_hub
+      role: Model registry and distribution platform
+      status: selected
+      languages: [Python]
+      notes: HuggingFace Hub is the de facto registry for open-weight models, with billions of downloads
+      usage_ref: https://netflixtechblog.com/scaling-llm-post-training-at-netflix-0046f8790194
+
+    - repo: huggingface/transformers
+      role: Model library and pretrained weights
+      status: selected
+      languages: [Python]
+      notes: De facto standard for loading/fine-tuning LLMs
+      usage_ref: https://netflixtechblog.com/scaling-llm-post-training-at-netflix-0046f8790194
+
+# -----------------------------------------------------------------------------
+# Layer 3: System Integration and Serving Infrastructure
+# Assembles compound AI systems and serves them in production.
+# -----------------------------------------------------------------------------
+integration_serving:
+  description: >
+    Application orchestration, tool integration, guardrails, inference engines,
+    serving frameworks, and runtime model transformations.
+
+  projects:
+    # -- Runtime model transformations --
+    # Format conversion and quantization: transforms model artifacts before serving.
+    - repo: onnx/onnx
+      role: Model interchange format
+      status: selected
+      languages: [C++, Python]
+      notes: Standard format for model portability across frameworks and runtimes
+      usage_ref: https://www.datarobot.com/blog/optimizing-large-language-model-performance-with-onnx-on-datarobot-mlops/
+
+    - repo: mit-han-lab/llm-awq
+      role: Post-training quantization
+      status: selected
+      languages: [Python, C++, CUDA]
+      notes: AWQ (Activation-aware Weight Quantization); actively maintained
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/accelerating-llm-inference-with-post-training-weight-and-activation-using-awq-and-gptq-on-amazon-sagemaker-ai/
+
+    - repo: AutoGPTQ/AutoGPTQ
+      role: Post-training quantization
+      status: alternative
+      languages: [Python, C++, CUDA]
+      notes: GPTQ quantization; largely superseded; kept as alternative for completeness
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/accelerating-llm-inference-with-post-training-weight-and-activation-using-awq-and-gptq-on-amazon-sagemaker-ai/
+
+    # -- Inference engines --
+    - repo: vllm-project/vllm
+      role: LLM inference engine
+      status: selected
+      languages: [Python, C++, CUDA]
+      notes: PagedAttention, continuous batching
+      usage_ref: https://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-192.pdf
+
+    - repo: NVIDIA/TensorRT-LLM
+      role: LLM inference engine (Triton backend)
+      status: selected
+      languages: [Python, C++, CUDA]
+      notes: Native LLM backend for Triton inference server; complementary to Triton, not an alternative to vLLM — vLLM is the standalone LLM server, TensorRT-LLM is Triton's LLM execution layer
+      usage_ref: https://developer.nvidia.com/blog/llm-inference-benchmarking-performance-tuning-with-tensorrt-llm/
+
+    - repo: triton-inference-server/server
+      role: Multi-framework inference server
+      status: selected
+      languages: [C++, Python]
+      notes: NVIDIA Triton; supports multiple model formats
+      usage_ref: https://developer.nvidia.com/blog/scaling-llms-with-nvidia-triton-and-nvidia-tensorrt-llm-using-kubernetes/
+
+    - repo: microsoft/onnxruntime
+      role: Cross-platform inference runtime
+      status: selected
+      languages: [C++, Python, C#]
+      notes: ONNX model execution; quantization support
+      usage_ref: https://www.datarobot.com/blog/optimizing-large-language-model-performance-with-onnx-on-datarobot-mlops/
+
+    - repo: huggingface/text-generation-inference
+      role: LLM inference server
+      status: alternative
+      languages: [Rust, Python]
+      notes: HuggingFace TGI; alternative to vLLM
+      usage_ref: https://huggingface.co/blog/martinigoyanes/llm-inference-at-scale-with-tgi
+
+    # -- Serving infrastructure --
+    # Deployment, scaling, and gateway: exposes inference to consumers.
+    - repo: ray-project/ray
+      role: Distributed computing and model serving
+      status: selected
+      languages: [Python, C++, Java]
+      notes: Ray Serve for inference; also used in training; the coherent choice when Ray is already used cross-layer
+      usage_ref: https://www.anyscale.com/blog/ray-serve-inference-lower-latency-higher-throughput-haproxy
+
+    - repo: kserve/kserve
+      role: Model serving on Kubernetes
+      status: alternative
+      languages: [Python, Go]
+      notes: K8s-native model lifecycle management; overlaps with Ray Serve for serving; preferred when not using Ray in training
+      usage_ref: https://kserve.github.io/website/blog/cloud-native-ai-inference-kserve-llm-d
+
+    - repo: seldon-io/seldon-core
+      role: Model serving on Kubernetes
+      status: alternative
+      languages: [Python, Go, Java]
+      notes: Alternative to KServe
+      usage_ref: https://www.seldon.io/revolutionizing-enterprise-solutions-with-generative-ai/
+
+    - repo: envoyproxy/envoy
+      role: API gateway and service proxy
+      status: selected
+      languages: [C++]
+      notes: Request routing, rate limiting, load balancing; sits in front of serving backends
+      usage_ref: none
+
+    # -- Application orchestration --
+    - repo: langchain-ai/langchain
+      role: LLM application orchestration
+      status: selected
+      languages: [Python]
+      notes: Chains, agents, tool use, RAG pipelines
+      usage_ref: https://blog.langchain.com/is-langgraph-used-in-production/
+
+    - repo: run-llama/llama_index
+      role: LLM application orchestration (data-focused)
+      status: alternative
+      languages: [Python]
+      notes: Alternative to LangChain; emphasis on data connectors
+      usage_ref: https://www.llamaindex.ai/blog/case-study-how-caidera-ai-accelerates-life-sciences-marketing-with-llamaindex
+
+    - repo: stanfordnlp/dspy
+      role: Programmatic prompt optimization
+      status: alternative
+      languages: [Python]
+      notes: Compiler-based approach to LLM pipelines
+      usage_ref: https://dspy.ai/learn/production/
+
+    # -- Prompt management --
+    - repo: microsoft/promptflow
+      role: Prompt versioning and pipeline management
+      status: selected
+      languages: [Python]
+      notes: Versioned prompt artifacts with evaluation and tracing; addresses the implicit prompt dependency tracking problem described in paper Section 4.1
+      usage_ref: https://microsoft.github.io/promptflow/
+
+    # -- Guardrails --
+    - repo: guardrails-ai/guardrails
+      role: Output validation and guardrails
+      status: selected
+      languages: [Python]
+      notes: Schema enforcement, content filtering
+      usage_ref: none
+
+    - repo: NVIDIA/NeMo-Guardrails
+      role: Programmable guardrails
+      status: alternative
+      languages: [Python]
+      notes: Colang-based guardrail definitions
+      usage_ref: none
+
+    - repo: eth-sri/lmql
+      role: Constrained LLM generation and guardrails
+      status: alternative
+      languages: [Python]
+      notes: Scripting language for constrained LLM decoding; named alongside Guardrails.ai in paper Section 4.3
+      usage_ref: https://lmql.ai/
+
+# -----------------------------------------------------------------------------
+# Layer 4: Cross-Cutting Infrastructure
+# Orchestration, observability, and operational substrate.
+# -----------------------------------------------------------------------------
+cross_cutting:
+  description: >
+    Container orchestration, observability, CI/CD, and operational
+    infrastructure that spans all layers.
+
+  projects:
+    # -- Container infrastructure --
+    # Kubernetes and its container runtime: the shared execution substrate for all layers.
+    - repo: kubernetes/kubernetes
+      role: Container orchestration
+      status: selected
+      languages: [Go]
+      notes: Cluster management for all layers
+      usage_ref: https://www.linuxfoundation.org/blog/kubernetes-fuels-ai-growth-organizational-culture-remains-the-decisive-factor
+
+    - repo: containerd/containerd
+      role: Container runtime
+      status: selected
+      languages: [Go]
+      notes: Low-level container execution; direct dependency of Kubernetes
+      usage_ref: none
+
+    # -- Infrastructure as Code --
+    - repo: hashicorp/terraform
+      role: Infrastructure provisioning
+      status: selected
+      languages: [Go]
+      notes: Cloud resource management
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/implement-a-secure-mlops-platform-based-on-terraform-and-github/
+
+    - repo: pulumi/pulumi
+      role: Infrastructure provisioning
+      status: alternative
+      languages: [Go, TypeScript, Python]
+      notes: Alternative to Terraform; multi-language
+      usage_ref: https://www.pulumi.com/case-studies/compostable-ai/
+
+    # -- CI/CD --
+    - repo: argoproj/argo-cd
+      role: GitOps continuous delivery
+      status: selected
+      languages: [Go]
+      notes: Kubernetes-native CD
+      usage_ref: https://clear.ml/blog/case-study/scaling-machine-learning-with-clearml-kubernetes-and-argocd-at-wsc-sports
+
+    - repo: argoproj/argo-workflows
+      role: Workflow engine for CI/CD and ML pipelines
+      status: selected
+      languages: [Go]
+      notes: Also used for ML pipeline orchestration
+      usage_ref: https://argo-workflows.readthedocs.io/en/latest/use-cases/machine-learning/
+
+    # -- Observability --
+    - repo: prometheus/prometheus
+      role: Metrics collection and alerting
+      status: selected
+      languages: [Go]
+      notes: Monitoring across all layers
+      usage_ref: https://opentelemetry.io/blog/2024/llm-observability/
+
+    - repo: grafana/grafana
+      role: Observability dashboards
+      status: selected
+      languages: [TypeScript, Go]
+      notes: Visualization for metrics and logs
+      usage_ref: https://grafana.com/blog/a-complete-guide-to-llm-observability-with-opentelemetry-and-grafana-cloud/
+
+    - repo: open-telemetry/opentelemetry-collector
+      role: Distributed tracing and telemetry
+      status: selected
+      languages: [Go]
+      notes: Vendor-neutral observability pipeline
+      usage_ref: https://opentelemetry.io/blog/2024/llm-observability/
+
+    - repo: grafana/loki
+      role: Log aggregation
+      status: selected
+      languages: [Go]
+      notes: Log collection and querying
+      usage_ref: none
+
+    # -- System substrate --
+    # OS kernel and GPU kernel driver: the lowest measurable layer of the stack.
+    - repo: torvalds/linux
+      role: Operating system kernel
+      status: selected
+      languages: [C, Assembly]
+      notes: >
+        Linux kernel at a pinned LTS tag (e.g., v6.6); present as an implicit
+        dependency in every container image across all layers. Open source and
+        measurable; moved out of opaque estimates to provide a real LOC floor
+        for the OS layer.
+      usage_ref: none
+
+    - repo: NVIDIA/open-gpu-kernel-modules
+      role: Open-source NVIDIA GPU kernel driver
+      status: selected
+      languages: [C, C++]
+      notes: >
+        Open-source kernel-mode GPU driver released by NVIDIA in May 2022;
+        covers datacenter GPUs (A100, H100) used in training and inference.
+        Measures the open portion of the GPU driver stack; the closed
+        user-space libraries (cuDNN, cuBLAS, TensorRT) remain in opaque estimates.
+      usage_ref: https://developer.nvidia.com/blog/nvidia-transitions-fully-towards-open-source-gpu-kernel-modules/
+
+
+# -----------------------------------------------------------------------------
+# Layer 5: Opaque and Proprietary Components (Estimates)
+# =============================================================================
+# These cannot be measured from open-source repos. We include estimated
+# ranges based on published data, industry reports, and analogous systems.
+# These estimates will appear in the paper with appropriate caveats.
+# -----------------------------------------------------------------------------
+opaque_components:
+  description: >
+    Proprietary code, internal glue, managed services, and OS-level
+    dependencies that are part of the supply chain but not directly
+    measurable from public repositories.
+
+  categories:
+    - name: Internal glue code and CI/CD configuration
+      description: >
+        Organization-internal code that connects and operates the measured
+        open-source components: Airflow DAG definitions, Kubernetes manifests
+        and Helm charts, Terraform modules, custom wrapper libraries,
+        deployment scripts, feature flag systems, A/B testing harnesses,
+        and internal CI pipeline definitions. Does NOT include the open-source
+        tools themselves (Airflow, Argo CD, Argo Workflows, Terraform,
+        Prometheus, Grafana — all measured in cross_cutting).
+      estimated_loc_range: [50_000, 300_000]
+      estimated_loc_notes: >
+        Lower bound: a small team running supervised fine-tuning with
+        minimal custom tooling (DAGs, manifests, scripts). Upper bound:
+        a mature ML platform team with extensive internal libraries and
+        multi-environment deployment automation. Values above 300K push
+        into territory better classified as proprietary model training
+        code. Range anchored by Netflix (tens of thousands of lines
+        reported for their LLM post-training platform) and comparable
+        mid-size MLOps teams.
+      languages: [Python, YAML, Bash, Go, HCL]
+      usage_ref: https://www.astronomer.io/blog/airflow-in-action-openai/, https://netflixtechblog.com/scaling-llm-post-training-at-netflix-0046f8790194
+
+    - name: Proprietary model training code
+      description: >
+        Closed-source training infrastructure not released publicly:
+        internal training loop implementations, custom model architecture
+        code, proprietary data preprocessing pipelines, and internal
+        evaluation harnesses. Does NOT include PyTorch, DeepSpeed,
+        Megatron-LM, PEFT, TRL, or lm-evaluation-harness — all measured
+        in the training layer.
+      estimated_loc_range: [100_000, 500_000]
+      estimated_loc_notes: >
+        Lower bound: a team doing supervised fine-tuning on top of
+        open-source tooling (PEFT, TRL, lm-evaluation-harness) with
+        minimal custom code. Upper bound: a full pretraining infrastructure
+        with custom data pipelines, architecture modifications, and
+        evaluation harnesses — consistent with what Meta describes for
+        Llama pretraining beyond the open-source release. Values above
+        500K LOC approach the scale of the open-source frameworks
+        themselves (DeepSpeed: ~300K, Megatron-LM: ~150K) and are
+        implausible for the proprietary layer alone.
+      languages: [Python, C++, CUDA]
+      usage_ref: https://arxiv.org/abs/2412.19437,  https://dl.acm.org/doi/10.1145/3695053.3731410
+
+    - name: Managed cloud service backends
+      description: >
+        Proprietary backend code of managed cloud services used as
+        black-box dependencies: AWS SageMaker orchestration layer,
+        Lambda, CloudWatch; GCP Vertex AI, BigQuery, Cloud Storage
+        backend; Azure ML, Blob Storage backend. Does NOT include
+        Kubernetes (measured in cross_cutting — EKS/GKE/AKS are managed
+        wrappers around it) or S3-compatible object storage (MinIO,
+        measured in data_pipelines). Covers only the closed control-plane
+        and proprietary service logic that has no open-source equivalent.
+      estimated_loc_range: [10_000_000, 50_000_000]
+      estimated_loc_notes: >
+        AWS total codebase reportedly exceeds 200M LOC across all services
+        (cited in re:Invent engineering talks). The subset of services
+        relevant to this stack (SageMaker, Lambda, CloudWatch, S3 backend,
+        EKS control plane) is estimated at 5–15 services. At 1–5M LOC
+        per major service backend, 10M–50M is the plausible range for
+        a single-cloud deployment. The 100M upper bound from the prior
+        estimate was appropriate for a multi-cloud scenario counting all
+        services of AWS+GCP+Azure simultaneously, which is not the
+        baseline assumption here.
+      languages: [Java, Go, C++, Python, Rust]
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/deploy-rag-applications-on-amazon-sagemaker-jumpstart-using-faiss/, https://developers.googleblog.com/building-production-ai-on-google-cloud-tpus-with-jax/
+
+    - name: Operating system and system libraries
+      description: >
+        Userspace system libraries present in every container image:
+        glibc, libstdc++, OpenSSL, zlib, and the hundreds of packages
+        in a standard Ubuntu/Debian base image. The Linux kernel itself
+        is now measured directly (torvalds/linux in cross_cutting) and
+        excluded from this estimate. Covers only the long tail of
+        system packages that are not individually enumerated.
+      estimated_loc_range: [3_000_000, 6_000_000]
+      estimated_loc_notes: >
+        Floor anchored by individually measurable components: glibc (~1.5M
+        LOC, publicly available), OpenSSL (~500K LOC), libstdc++ (~300K LOC)
+        — these three alone sum to ~2.3M. A standard Ubuntu 22.04 base image
+        carries ~400 packages; the aggregate long tail adds an estimated
+        1–4M LOC. Upper bound of 6M reflects a larger base image with
+        additional system packages (e.g., CUDA runtime dependencies,
+        Python runtime). Range is tighter than before because the kernel
+        floor is now measured directly.
+      languages: [C, Assembly, C++]
+      usage_ref: https://aws.amazon.com/blogs/machine-learning/implement-a-secure-mlops-platform-based-on-terraform-and-github/
+
+    - name: Closed CUDA user-space libraries
+      description: >
+        Binary-only NVIDIA user-space libraries shipped with the CUDA toolkit:
+        cuDNN, cuBLAS, cuSPARSE, and the TensorRT inference optimizer.
+        Does NOT include the GPU kernel driver (NVIDIA/open-gpu-kernel-modules,
+        now measured in cross_cutting), cuda-python (measured in training),
+        or NCCL (measured in training). Covers only the closed libraries
+        with no public source repository.
+      estimated_loc_range: [3_000_000, 6_000_000]
+      estimated_loc_notes: >
+        Anchored by open-source analogues: oneDNN (Intel's open cuDNN
+        equivalent) is ~500K LOC; OpenBLAS (cuBLAS analogue) is ~200K LOC.
+        NVIDIA's implementations are substantially larger given broader
+        hardware support and hand-tuned kernels — a 5–10x multiplier over
+        the open analogues is consistent with the complexity gap observed
+        between NVIDIA/open-gpu-kernel-modules (1.6M LOC, measured) and
+        comparable open drivers. TensorRT adds significant scope. Upper
+        bound of 6M reflects all four libraries at the high end of their
+        individual estimates; 10M from the prior estimate was unsupported.
+      languages: [C++, C, CUDA]
+      usage_ref: https://developer.nvidia.com/blog/scaling-llms-with-nvidia-triton-and-nvidia-tensorrt-llm-using-kubernetes/, https://developer.nvidia.com/blog/llm-inference-benchmarking-performance-tuning-with-tensorrt-llm/
+
+
+# =============================================================================
+# Measurement Configuration
+# =============================================================================
+measurement:
+  # Tool for LOC counting
+  loc_tool: scc
+  loc_tool_url: https://github.com/boyter/scc
+
+  # Clone depth (shallow clone for speed; full clone for dep resolution)
+  clone_depth: 1
+
+  # Dependency resolution strategy
+  dep_resolution: full_transitive
+  dep_resolution_notes: >
+    Full transitive resolution where possible. Methods per ecosystem:
+    - Python (PyPI): pip install --dry-run or pipdeptree
+    - Rust (crates.io): cargo metadata
+    - Go (Go modules): go mod graph
+    - JavaScript (npm): npm ls --all
+    - Java (Maven): mvn dependency:tree
+    - C/C++: manual enumeration from CMake/Bazel + system packages
+
+  # Output formats
+  output_formats: [json, csv]
+  output_dir: results/
+
+  # Cross-layer graph
+  generate_cross_layer_graph: true
+  graph_notes: >
+    Identify shared dependencies across layers (e.g., PyTorch appears in
+    both training and serving; protobuf appears everywhere). Produce an
+    adjacency list of project-to-project edges based on shared deps.

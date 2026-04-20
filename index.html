@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software Supply chain of AI Systems: Software Stack Measurement</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eae9e4;
+    --fg: #1a1a1a; --fg2: #5f5e5a; --fg3: #888780;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --radius: 10px; --radius-sm: 6px;
+    --font: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+    --mono: "SF Mono", "Fira Code", "Consolas", monospace;
+    --teal50: #E1F5EE; --teal600: #0F6E56; --teal800: #085041;
+    --blue50: #E6F1FB; --blue600: #185FA5; --blue800: #0C447C;
+    --amber50: #FAEEDA; --amber600: #854F0B; --amber800: #633806;
+    --purple50: #EEEDFE; --purple600: #534AB7; --purple800: #3C3489;
+    --coral400: #D85A30; --red400: #E24B4A; --green400: #639922;
+    --pink400: #D4537E; --gray400: #888780;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --bg2: #2c2c2a; --bg3: #3d3d3a;
+      --fg: #e8e6de; --fg2: #b4b2a9; --fg3: #888780;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+      --teal50: #04342C; --teal600: #5DCAA5; --teal800: #9FE1CB;
+      --blue50: #042C53; --blue600: #85B7EB; --blue800: #B5D4F4;
+      --amber50: #412402; --amber600: #EF9F27; --amber800: #FAC775;
+      --purple50: #26215C; --purple600: #AFA9EC; --purple800: #CECBF6;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); color: var(--fg); background: var(--bg); line-height: 1.5; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 2rem; }
+
+  /* Header */
+  .hdr { text-align: center; margin-bottom: 0.75rem; }
+  .hdr h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
+  .hdr p { font-size: 13px; color: var(--fg2); margin-top: 4px; }
+
+  /* Status bar */
+  .status-bar { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 1rem; }
+  .status-chip { font-size: 11px; padding: 3px 10px; border-radius: 12px; border: 0.5px solid var(--border2);
+    display: flex; align-items: center; gap: 4px; }
+  .status-chip .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-pending { background: var(--fg3); opacity: 0.4; }
+  .dot-ok { background: var(--green400); }
+  .dot-err { background: var(--red400); }
+
+  /* LOC equation */
+  .loc-eq { margin-bottom: 1rem; }
+  .loc-eq-row { display: flex; align-items: stretch; gap: 0; }
+  .loc-seg {
+    flex: var(--flex, 1); min-width: 0;
+    border-radius: var(--radius); padding: 14px 16px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: visible;
+  }
+  .loc-seg-val { font-size: 22px; font-weight: 700; font-family: var(--mono); line-height: 1; white-space: nowrap; }
+  .loc-seg-range { font-size: 12px; font-weight: 600; font-family: var(--mono); line-height: 1; opacity: 0.75; white-space: nowrap; }
+  .loc-seg-label { font-size: 10px; font-weight: 500; margin-top: 6px; opacity: 0.7; line-height: 1.3; }
+  .loc-seg-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.4px; opacity: 0.55;
+    text-transform: uppercase; margin-bottom: 4px; }
+  .loc-op { display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 300; color: var(--fg3); padding: 0 6px; flex-shrink: 0; }
+  .loc-seg-direct  { background: var(--teal50);   color: var(--teal800); }
+  .loc-seg-trans   { background: var(--blue50);   color: var(--blue800); border: 1px dashed color-mix(in srgb, var(--blue600) 40%, transparent); }
+  .loc-seg-opaque  { background: var(--amber50);  color: var(--amber800); border: 1px dashed color-mix(in srgb, var(--amber600) 40%, transparent); }
+  .loc-seg-total   { background: var(--fg); color: var(--bg); }
+  .loc-seg-total .loc-seg-label { opacity: 0.6; }
+  .loc-bar-wrap { margin-top: 10px; }
+  .loc-bar { height: 5px; border-radius: 3px; display: flex; overflow: hidden; background: var(--bg3); }
+  .loc-bar-d { background: var(--teal600); transition: width 0.6s; }
+  .loc-bar-t { background: var(--blue600); opacity: 0.6; transition: width 0.6s; }
+  .loc-bar-o { background: var(--amber600); opacity: 0.45; transition: width 0.6s; }
+
+  /* Secondary stats row */
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
+  @media (max-width: 640px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+  .mc { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; text-align: center; }
+  .mc-val { font-size: 24px; font-weight: 600; font-family: var(--mono); }
+  .mc-val.ph { color: var(--fg3); }
+  .mc-label { font-size: 11px; color: var(--fg2); margin-top: 2px; }
+
+  /* Language bar */
+  .langbar { margin-bottom: 1rem; }
+  .langbar-title { font-size: 11px; color: var(--fg2); font-weight: 600; margin-bottom: 4px; }
+  .langbar-track { display: flex; height: 20px; border-radius: 10px; overflow: hidden; background: var(--bg3); }
+  .langbar-seg { display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 600; color: #fff; min-width: 2px; transition: flex 0.4s; }
+  .langbar-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .langbar-li { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--fg2); }
+  .langbar-li .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Main grid */
+  .main { display: grid; grid-template-columns: 1fr 200px; gap: 16px; }
+  @media (max-width: 700px) { .main { grid-template-columns: 1fr; } }
+
+  /* Layers */
+  .layers { display: flex; flex-direction: column; gap: 2px; }
+  .layer { border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: filter 0.2s; }
+  .layer:hover { filter: brightness(1.03); }
+  .lh { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .ln { font-size: 10px; font-weight: 600; opacity: 0.45; }
+  .lt { font-size: 15px; font-weight: 600; }
+  .ls { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+
+  .l-stats { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; font-size: 11px; }
+  .l-stat span { font-weight: 600; font-family: var(--mono); font-size: 12px; }
+  .l-stat .ph { opacity: 0.35; }
+
+  .dep-bar-wrap { margin-top: 6px; }
+  .dep-bar-track { height: 6px; border-radius: 3px; background: rgba(128,128,128,0.12); display: flex; overflow: hidden; cursor: default; }
+  .dep-bar-d { height: 100%; opacity: 0.7; transition: width 0.6s; flex-shrink: 0; min-width: 3px; }
+  .dep-bar-t { height: 100%; opacity: 0.18; transition: width 0.6s; flex-shrink: 0; background: var(--fg) !important; }
+  .dep-bar-labels { position: relative; height: 14px; font-size: 9px; color: var(--fg2); margin-top: 2px; }
+  .dep-bar-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .dep-bar-labels .lbl-direct { transform: none; left: 0 !important; }
+
+  /* Subcategory tag in project table */
+  .subcat-tag { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 1px 5px; border-radius: 3px; margin-right: 5px;
+    background: rgba(128,128,128,0.15); color: var(--fg2);
+    vertical-align: middle; white-space: nowrap; border: 0.5px solid var(--border2); }
+
+  .proj-grid { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s; }
+  .layer.expanded .proj-grid { max-height: 2000px; opacity: 1; margin-top: 10px; overflow: visible; }
+  .ptable { width: 100%; border-collapse: collapse; font-size: 11px; overflow: visible; }
+  .ptable th { text-align: left; font-weight: 600; opacity: 0.4; font-size: 10px; padding: 2px 6px 4px; }
+  .ptable th.r { text-align: right; }
+  .ptable td { padding: 3px 6px; border-top: 0.5px solid rgba(128,128,128,0.1); }
+  .ptable td.r { text-align: right; font-family: var(--mono); font-size: 10px; }
+  .ptable td.name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+  .ptable .ph { opacity: 0.45; font-style: italic; font-family: var(--font); font-size: 10px; }
+  .ptable td.langs { font-size: 10px; opacity: 0.7; max-width: 120px; white-space: nowrap; overflow: visible; }
+  .ptable td.langs .tip::after { white-space: normal; width: 180px; left: 0; transform: none; }
+
+  .l-data { background: var(--teal50); color: var(--teal800); }
+  .l-train { background: var(--blue50); color: var(--blue800); }
+  .l-serve { background: var(--amber50); color: var(--amber800); }
+  .l-cross { background: var(--purple50); color: var(--purple800); }
+  .l-opaque { background: var(--bg2); color: var(--fg2); border: 1px dashed var(--border2); }
+
+  .l-data .dep-bar-d, .l-data .dep-bar-t { background: var(--teal600); }
+  .l-train .dep-bar-d, .l-train .dep-bar-t { background: var(--blue600); }
+  .l-serve .dep-bar-d, .l-serve .dep-bar-t { background: var(--amber600); }
+  .l-cross .dep-bar-d, .l-cross .dep-bar-t { background: var(--purple600); }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 14px; }
+  .sb-title { font-size: 11px; font-weight: 600; color: var(--fg2); letter-spacing: 0.3px;
+    padding-bottom: 4px; border-bottom: 0.5px solid var(--border); margin-bottom: 2px; }
+  .pipe { display: flex; flex-direction: column; gap: 2px; }
+  .ps { border-radius: var(--radius-sm); overflow: hidden; }
+  .ps-hd { display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    cursor: pointer; border-radius: var(--radius-sm);
+    transition: background 0.15s; user-select: none; }
+  .ps-hd:hover { background: var(--bg3); }
+  .ps-num { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+    background: var(--bg3); color: var(--fg3); transition: background 0.15s, color 0.15s; }
+  .ps.open .ps-num { background: var(--fg); color: var(--bg); }
+  .pl { font-size: 11px; font-weight: 600; flex: 1; }
+  .ps-arrow { font-size: 9px; color: var(--fg3); transition: transform 0.2s; }
+  .ps.open .ps-arrow { transform: rotate(90deg); }
+  .pp { font-size: 10px; color: var(--fg3); line-height: 1.5;
+    max-height: 0; overflow: hidden; padding: 0 8px 0 34px;
+    transition: max-height 0.3s ease, padding 0.2s; }
+  .ps.open .pp { max-height: 120px; padding: 0 8px 8px 34px; }
+  .ps.open .pp.pp-tall { max-height: 400px; }
+
+  /* Cross-layer panel */
+  .xl-panel { background: var(--bg2); border-radius: var(--radius-sm); padding: 10px 12px; overflow: visible; }
+  .xl-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 11px; overflow: visible; }
+  .xl-row:last-of-type { margin-bottom: 0; }
+  .xl-name { flex: 1; font-weight: 500; white-space: nowrap; min-width: 0; }
+  .xl-name-inner { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .xl-dots { display: flex; gap: 2px; }
+  .xl-dot { width: 7px; height: 7px; border-radius: 50%; opacity: 0.13; }
+  .xl-dot.on { opacity: 1; }
+  .xl-count { font-size: 10px; font-family: var(--mono); color: var(--fg3); min-width: 20px; text-align: right; }
+  .xl-legend { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .xl-li { display: flex; align-items: center; gap: 3px; font-size: 10px; color: var(--fg2); }
+
+  /* Fallback loader */
+  .loader-section { margin-top: 1.5rem; padding: 1.25rem; background: var(--bg2); border-radius: var(--radius);
+    border: 1px dashed var(--border2); text-align: center; }
+  .loader-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .loader-section p { font-size: 12px; color: var(--fg2); margin-bottom: 12px; }
+  .file-inputs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .file-btn { font-size: 11px; padding: 6px 14px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border2); background: var(--bg); color: var(--fg); cursor: pointer; }
+  .file-btn:hover { background: var(--bg3); }
+  .file-btn input { display: none; }
+
+  .footer { text-align: center; padding: 1.5rem 0 0.5rem; font-size: 10px; color: var(--fg3); line-height: 1.6; }
+  .footer code { font-family: var(--mono); background: var(--bg2); padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+
+  /* Source link */
+  .src-link { font-size: 13px; opacity: 0.4; vertical-align: middle; line-height: 1; transition: opacity 0.15s, filter 0.15s; display: inline-block; }
+  .src-link:hover { opacity: 1; filter: saturate(2) brightness(1.1); cursor: pointer; }
+
+  /* Tooltips */
+  .tip { position: relative; cursor: default; border-bottom: 1px dotted currentColor; text-decoration: none; }
+  .tip::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--fg); color: var(--bg);
+    font-size: 10px; font-family: var(--font); font-weight: 400;
+    line-height: 1.4; white-space: normal; width: 200px;
+    padding: 5px 8px; border-radius: 5px;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s;
+    z-index: 100; text-align: left;
+  }
+  .tip:hover::after { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <h1>The Grand Size of the AI Supply Chain</h1>
+    <p>Quantifying the hidden software complexity behind compound AI systems</p>
+  </div>
+
+  <div class="status-bar" id="status-bar"></div>
+  <div class="loc-eq" id="loc-eq"></div>
+  <div class="metrics" id="top-metrics"></div>
+  <div class="langbar" id="langbar"></div>
+  <div class="main">
+    <div class="layers" id="layer-stack"></div>
+    <div class="sidebar">
+      <div>
+        <div class="sb-title">How we measured this</div>
+        <div class="pipe" id="method-pipe">
+          <div class="ps" onclick="this.classList.toggle('open')">
+            <div class="ps-hd"><div class="ps-num">1</div><div class="pl">Select the reference stack</div><span class="ps-arrow">&#9654;</span></div>
+            <div class="pp"><span id="proj-count">46</span> representative open-source projects across 4 infrastructure layers, chosen to reflect a realistic compound AI system. Only projects with <code>status: selected</code> in the stack config are measured.</div>
+          </div>
+          <div class="ps" onclick="this.classList.toggle('open')">
+            <div class="ps-hd"><div class="ps-num">2</div><div class="pl">Count source lines of code</div><span class="ps-arrow">&#9654;</span></div>
+            <div class="pp">Each repository is analyzed with a language-aware LOC counter (scc). Blank lines and comments are excluded. Only source files count &mdash; not generated code or vendored dependencies.</div>
+          </div>
+          <div class="ps" onclick="this.classList.toggle('open')">
+            <div class="ps-hd"><div class="ps-num">3</div><div class="pl">Resolve transitive dependencies</div><span class="ps-arrow">&#9654;</span></div>
+            <div class="pp">Per-ecosystem resolvers expand each manifest into its full transitive closure: pip-compile for Python, go list -m all for Go, cargo metadata for Rust, npm ls for Node, mvn dependency:tree for Maven. Projects with no resolver are marked <em>not resolved</em>.</div>
+          </div>
+          <div class="ps" onclick="this.classList.toggle('open')">
+            <div class="ps-hd"><div class="ps-num">4</div><div class="pl">Identify cross-layer exposure</div><span class="ps-arrow">&#9654;</span></div>
+            <div class="pp">Direct dependency lists are compared across all four layers. Packages appearing in two or more layers are flagged as cross-layer shared dependencies &mdash; a proxy for systemic supply chain risk.</div>
+          </div>
+          <div class="ps" onclick="this.classList.toggle('open')">
+            <div class="ps-hd"><div class="ps-num">5</div><div class="pl">Estimate opaque components</div><span class="ps-arrow">&#9654;</span></div>
+            <div class="pp">Proprietary software (cloud services, GPU drivers, OS, internal glue) cannot be measured from source. Ranges in Layer 5 are derived from public disclosures, SDK sizes, and industry benchmarks.</div>
+          </div>
+          <div class="ps" onclick="this.classList.toggle('open')">
+            <div class="ps-hd"><div class="ps-num">6</div><div class="pl">Measure transitive LOC</div><span class="ps-arrow">&#9654;</span></div>
+            <div class="pp pp-tall">
+              Transitive dependency LOC is measured in two stages, with the deterministic method taking priority per ecosystem.
+              <br><br>
+              <strong>Deterministic (preferred):</strong> each unique <em>(name, version)</em> pair across the full transitive closure is downloaded from the ecosystem registry and analyzed with scc. The total is the sum of measured LOC; packages that fail to download fall back to the median of successfully measured packages in the same ecosystem.
+              <br><br>
+              <strong>Statistical fallback:</strong> when deterministic measurements are not yet available for an ecosystem, a median LOC/package ratio is derived from the cloned repos (project LOC &divide; transitive package count) and applied to each project&rsquo;s transitive count. This produces a range of &times;0.5&ndash;&times;1 of the median as lower and upper bounds.
+              <br><br>
+              The dashboard uses the deterministic total where available and falls back to the statistical estimate per ecosystem. The badge on the transitive LOC segment reflects which method is in use: <em>measured</em>, <em>~ partial</em>, or <em>~ estimated</em>.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="sb-title"><span class="tip" data-tip="Packages that appear in the direct dependency lists of projects spanning more than one infrastructure layer.">Cross-layer shared dependencies</span></div>
+        <div class="xl-panel" id="xl-panel">
+          <div style="font-size:11px;color:var(--fg3);text-align:center;padding:8px 0;">
+            Awaiting shared_deps_report.csv
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loader-section" id="loader-section">
+    <h3>Manual file loading</h3>
+    <p>If not serving via HTTP, load result files here. Each file is optional &mdash; the dashboard renders whatever is available.</p>
+    <div class="file-inputs">
+      <label class="file-btn">stack_config.yaml<input type="file" accept=".yaml,.yml" data-key="stack_yaml" onchange="handleFile(this)"></label>
+      <label class="file-btn">ecosystem_loc_medians.csv<input type="file" accept=".csv" data-key="eco_medians" onchange="handleFile(this)"></label>
+      <label class="file-btn">loc_summary.csv<input type="file" accept=".csv" data-key="loc_csv" onchange="handleFile(this)"></label>
+      <label class="file-btn">deps_summary.csv<input type="file" accept=".csv" data-key="deps_csv" onchange="handleFile(this)"></label>
+      <label class="file-btn">shared_deps_report.csv<input type="file" accept=".csv" data-key="shared_csv" onchange="handleFile(this)"></label>
+      <label class="file-btn">loc_per_project/ (JSONs)<input type="file" accept=".json" multiple data-key="loc_jsons" onchange="handleFiles(this)"></label>
+      <label class="file-btn">deps_per_project/ (JSONs)<input type="file" accept=".json" multiple data-key="deps_jsons" onchange="handleFiles(this)"></label>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ANIMATED INFRASTRUCTURE DIAGRAM (SVG)
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="infra-section" style="margin-top:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+      <div>
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.3px;">Infrastructure in motion</div>
+        <div style="font-size:11px;color:var(--fg2);margin-top:2px;">Artifacts and transformations flowing through the five layers of the AI supply chain</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button id="svg-boundary-toggle" onclick="svgBoundaryToggle()"
+          style="font-size:11px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--border2);
+                 background:var(--bg2);color:var(--fg);cursor:pointer;font-family:var(--font);">
+          &#9638; Trust boundaries
+        </button>
+        <button id="svg-infra-toggle" onclick="svgInfraToggle()"
+          style="font-size:11px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--border2);
+                 background:var(--bg2);color:var(--fg);cursor:pointer;font-family:var(--font);">
+          &#9646;&#9646; Pause
+        </button>
+      </div>
+    </div>
+    <div style="position:relative;border-radius:var(--radius);overflow:hidden;background:#f7f6f2;
+                border:1px solid var(--border2);">
+      <svg id="infra-svg" style="display:block;width:100%;"></svg>
+    </div>
+
+    <!-- legend + explanation -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+
+      <!-- artifact legend -->
+      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.4px;color:var(--fg2);text-transform:uppercase;margin-bottom:6px;">Artifacts in flight</div>
+        <div id="infra-legend" style="display:flex;flex-wrap:wrap;gap:6px 14px;"></div>
+      </div>
+
+      <!-- how to read -->
+      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.4px;color:var(--fg2);text-transform:uppercase;margin-bottom:6px;">How to read this</div>
+        <div style="font-size:11px;color:var(--fg2);line-height:1.55;">
+          Each moving packet is an <b style="color:var(--fg);">artifact</b> — a concrete, persistent object produced and consumed in the supply chain.
+          <b style="color:var(--fg);">Diamonds</b> are <em>trained artifacts</em> (model checkpoints, fine-tuned models): their behavior is encoded in learned parameters and cannot be inferred from inspection.
+          <b style="color:var(--fg);">Squares</b> are data artifacts (datasets, corpora, vector indexes).
+          <b style="color:var(--fg);">Circles</b> are deterministic artifacts (configs, container images, logs, prompts): inspectable and logic-defined.
+          When a packet arrives at a node, the node flashes and shows the <b style="color:var(--fg);">transformation</b> applied there — the process that produces the next artifact from the current one.
+          Dashed lines are permanent <b style="color:var(--fg);">dependency edges</b>, present even when no artifact is in transit.
+          Toggle <em>Trust boundaries</em> to overlay the organizational actors: when a packet crosses a boundary it flashes — a supply chain handoff between independently managed infrastructures.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    Serve from project root: <code>python3 -m http.server</code> then open <code>http://localhost:8000/dashboard.html</code><br>
+    The dashboard auto-loads all result files. Or use the manual loader above.
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   STATE
+   ========================================================================= */
+var S = {
+  loc: [],            // rows from loc_summary.csv
+  deps: [],           // rows from deps_summary.csv
+  shared: [],         // rows from shared_deps_report.csv
+  ecoMedians: {},     // { ecosystem: { median, mean, n } } from ecosystem_loc_medians.csv
+  depLocSummary: {},  // { ecosystem: { total_loc_estimate, measured_loc, fallback_loc, unique_pairs, measured_ok } } from dep_loc_summary.csv
+  locJsons: {},       // { "layer__proj": scc_array }
+  depsJsons: {},      // { "layer__proj": { direct_deps: [...], ... } }
+  fileStatus: {       // loading status per source
+    loc_csv: 'pending', deps_csv: 'pending', shared_csv: 'pending',
+    stack_yaml: 'pending', eco_medians: 'pending', dep_loc_measured: 'pending',
+    loc_jsons: 'pending', deps_jsons: 'pending'
+  }
+};
+
+var LAYERS = [
+  { key: 'data_pipelines',       cls: 'l-data',  num: 'Layer 1', title: 'Data pipelines',
+    sub: 'Ingestion, processing, annotation, versioning, vector search' },
+  { key: 'training',             cls: 'l-train', num: 'Layer 2', title: 'Training infrastructure',
+    sub: 'Frameworks, distributed training, fine-tuning, evaluation, registries' },
+  { key: 'integration_serving',  cls: 'l-serve', num: 'Layer 3', title: 'Integration and serving',
+    sub: 'Inference engines, orchestration, guardrails, quantization, gateway' },
+  { key: 'cross_cutting',        cls: 'l-cross', num: 'Layer 4', title: 'Cross-cutting infrastructure',
+    sub: 'Orchestration, observability, CI/CD, infrastructure as code' },
+];
+
+var LAYER_COLORS = {
+  data_pipelines: '#0F6E56', training: '#185FA5',
+  integration_serving: '#BA7517', cross_cutting: '#534AB7'
+};
+
+// Populated at runtime from stack_config.yaml.
+var PROJECT_META = {};
+var OPAQUE_COMPONENTS = []; // [{ name, loc_low, loc_high, languages, notes }]
+
+/* =========================================================================
+   STACK CONFIG YAML PARSER
+   Extracts:
+   - PROJECT_META: { repo, usage_ref, role, notes } per selected project
+   - OPAQUE_COMPONENTS: list of opaque layer categories with LOC ranges
+   Tailored to the known structure of stack_config.yaml.
+   ========================================================================= */
+function parseStackYAML(text) {
+  var meta = {};
+  var opaque = [];
+  var lines = text.split('\n');
+  var cur = null;           // current project or opaque category
+  var mode = null;          // 'project' | 'opaque'
+  var inMultiline = false;
+  var multilineField = null;
+  var currentSubcat = '';
+
+  function flushProject() {
+    if (cur && cur.repo && cur.status === 'selected') {
+      var key = cur.repo.split('/').pop();
+      meta[key] = {
+        repo:      cur.repo,
+        usage_ref: (cur.usage_ref && cur.usage_ref !== 'none') ? cur.usage_ref : null,
+        role:      cur.role   || '',
+        notes:     cur.notes  || '',
+        subcat:    cur.subcat || ''
+      };
+    }
+  }
+
+  function flushOpaque() {
+    if (cur && cur.name) {
+      opaque.push({
+        name:      cur.name,
+        loc_low:   cur.loc_low   || 0,
+        loc_high:  cur.loc_high  || 0,
+        languages: cur.languages || '',
+        notes:     cur.notes     || '',
+        loc_notes: cur.loc_notes || '',
+        usage_ref: cur.usage_ref || null
+      });
+    }
+  }
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var trimmed = line.trim();
+    // Subcategory comment: # -- Label --
+    if (/^#\s*--\s*.+\s*--\s*$/.test(trimmed)) {
+      inMultiline = false;
+      var subLabel = trimmed.replace(/^#\s*--\s*/, '').replace(/\s*--\s*$/, '').trim();
+      if (mode === 'project') { currentSubcat = subLabel; }
+      continue;
+    }
+    if (trimmed === '' || trimmed.charAt(0) === '#') { inMultiline = false; continue; }
+
+    // Top-level section switch
+    if (/^opaque_components:/.test(trimmed)) { flushProject(); cur = null; mode = 'opaque'; continue; }
+    if (/^(data_pipelines|training|integration_serving|cross_cutting|measurement):/.test(trimmed)) {
+      if (mode === 'opaque') flushOpaque(); else flushProject();
+      cur = null; mode = 'project'; currentSubcat = ''; continue;
+    }
+
+    // New project list item
+    if (mode === 'project' && /^\s+- repo:/.test(line)) {
+      flushProject();
+      cur = { repo: trimmed.replace(/^- repo:\s*/, ''), subcat: currentSubcat };
+      inMultiline = false; multilineField = null;
+      continue;
+    }
+
+    // New opaque category list item
+    if (mode === 'opaque' && /^\s+- name:/.test(line)) {
+      flushOpaque();
+      cur = { name: trimmed.replace(/^- name:\s*/, '').replace(/^['"]|['"]$/g, '') };
+      inMultiline = false; multilineField = null;
+      continue;
+    }
+
+    if (!cur) continue;
+
+    // Project scalar fields
+    if (mode === 'project') {
+      var m = trimmed.match(/^(status|role|usage_ref):\s*(.*)/);
+      if (m) { inMultiline = false; cur[m[1]] = m[2].trim(); continue; }
+      var nm = trimmed.match(/^notes:\s*(.*)/);
+      if (nm) {
+        var nv = nm[1].trim();
+        if (nv === '>') { cur.notes = ''; inMultiline = true; multilineField = 'notes'; }
+        else { cur.notes = nv; inMultiline = false; }
+        continue;
+      }
+    }
+
+    // Opaque scalar fields
+    if (mode === 'opaque') {
+      var dm = trimmed.match(/^description:\s*(.*)/);
+      if (dm) {
+        var dv = dm[1].trim();
+        if (dv === '>') { cur.notes = ''; inMultiline = true; multilineField = 'notes'; }
+        else { cur.notes = dv; inMultiline = false; }
+        continue;
+      }
+      var lm = trimmed.match(/^estimated_loc_range:\s*\[([^\]]+)\]/);
+      if (lm) {
+        var parts = lm[1].split(',');
+        cur.loc_low  = parseInt(parts[0].trim().replace(/_/g, ''), 10) || 0;
+        cur.loc_high = parseInt(parts[1].trim().replace(/_/g, ''), 10) || 0;
+        continue;
+      }
+      var langm = trimmed.match(/^languages:\s*\[([^\]]+)\]/);
+      if (langm) {
+        cur.languages = langm[1].replace(/'/g, '').replace(/"/g, '').trim();
+        continue;
+      }
+      var urm = trimmed.match(/^usage_ref:\s*(.*)/);
+      if (urm) {
+        var urv = urm[1].trim();
+        // take first URL if comma-separated
+        cur.usage_ref = (urv && urv !== 'none') ? urv.split(',')[0].trim() : null;
+        continue;
+      }
+      var lnm = trimmed.match(/^estimated_loc_notes:\s*(.*)/);
+      if (lnm) {
+        var lnv = lnm[1].trim();
+        if (lnv === '>') { cur.loc_notes = ''; inMultiline = true; multilineField = 'loc_notes'; }
+        else { cur.loc_notes = lnv; inMultiline = false; }
+        continue;
+      }
+    }
+
+    // Block scalar continuation
+    if (inMultiline && multilineField) {
+      if (/^\s{6,}/.test(line)) {
+        cur[multilineField] += (cur[multilineField] ? ' ' : '') + trimmed;
+      } else {
+        inMultiline = false; multilineField = null;
+      }
+    }
+  }
+  if (mode === 'project') flushProject();
+  if (mode === 'opaque') flushOpaque();
+
+  return { meta: meta, opaque: opaque };
+}
+
+var LANG_COLORS = {
+  'Go': '#1D9E75',
+  'Python': '#378ADD',
+  'C++': '#D85A30',
+  'JSON': '#E2A000',
+  'YAML': '#9B59B6',
+  'TypeScript': '#D4537E',
+  'Markdown': '#5F9EA0',
+  'Scala': '#BA7517',
+  'C Header': '#2E8B57',
+  'Java': '#C0392B',
+  'Other': '#888780',
+  'Rust': '#E24B4A',
+  'CUDA': '#534AB7',
+  'C': '#993C1D',
+  'JavaScript': '#F39C12',
+  'C#': '#639922',
+  'Assembly': '#708090',
+  'Shell': '#5F5E5A',
+};
+
+
+/* =========================================================================
+   CSV PARSER
+   ========================================================================= */
+function parseCSV(text) {
+  var lines = text.trim().replace(/\r/g, '').split('\n');
+  if (lines.length < 2) return [];
+  var headers = parseCSVLine(lines[0]);
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = parseCSVLine(lines[i]);
+    if (vals.length === 0) continue;
+    var row = {};
+    for (var j = 0; j < headers.length; j++) {
+      row[headers[j]] = (vals[j] || '').replace(/^"|"$/g, '');
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+function parseCSVLine(line) {
+  var result = []; var current = ''; var inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') { inQuotes = !inQuotes; }
+    else if (ch === ',' && !inQuotes) { result.push(current); current = ''; }
+    else { current += ch; }
+  }
+  result.push(current);
+  return result;
+}
+
+function parseEcoMedians(rows) {
+  // rows from ecosystem_loc_medians.csv -> { ecosystem: { median, mean, n, min, max } }
+  var result = {};
+  rows.forEach(function(r) {
+    var eco = (r.ecosystem || '').trim().toLowerCase();
+    if (!eco) return;
+    result[eco] = {
+      median: parseFloat(r.loc_per_pkg_median) || 0,
+      mean:   parseFloat(r.loc_per_pkg_mean)   || 0,
+      n:      parseInt(r.n_projects, 10)        || 0,
+      min:    parseFloat(r.loc_per_pkg_min)     || 0,
+      max:    parseFloat(r.loc_per_pkg_max)     || 0,
+    };
+  });
+  return result;
+}
+
+function parseDepLocSummary(rows) {
+  // rows from dep_loc_summary.csv -> { ecosystem: { total_loc_estimate, measured_loc, fallback_loc, unique_pairs, measured_ok } }
+  var result = {};
+  rows.forEach(function(r) {
+    var eco = (r.ecosystem || '').trim().toLowerCase();
+    if (!eco) return;
+    result[eco] = {
+      total_loc_estimate: parseInt(r.total_loc_estimate, 10) || 0,
+      measured_loc:       parseInt(r.measured_loc,       10) || 0,
+      fallback_loc:       parseInt(r.fallback_loc,       10) || 0,
+      unique_pairs:       parseInt(r.unique_pairs,       10) || 0,
+      measured_ok:        parseInt(r.measured_ok,        10) || 0,
+    };
+  });
+  return result;
+}
+
+/* =========================================================================
+   FORMATTING
+   ========================================================================= */
+function fmt(v) {
+  if (v === null || v === undefined || v === '' || v === 'NaN') return '<span class="ph">\u00b7\u00b7\u00b7</span>';
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return '<span class="ph">\u00b7\u00b7\u00b7</span>';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return Math.round(n / 1000).toLocaleString() + 'K';
+  return n.toLocaleString();
+}
+function fmtProjectName(name) {
+  var meta = PROJECT_META[name] || {};
+  var ghUrl = meta.repo ? 'https://github.com/' + meta.repo : null;
+  var srcUrl = meta.usage_ref || null;
+
+  var nameHtml = ghUrl
+    ? '<a href="' + ghUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:inherit;text-decoration:underline dotted;text-underline-offset:2px;">' + name + '</a>'
+    : name;
+
+  var srcHtml = '';
+  if (srcUrl) {
+    var domain = srcUrl.replace(/^https?:\/\//, '').split('/')[0];
+    srcHtml = '&thinsp;<a href="' + srcUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="src-link tip" data-tip="Usage reference: ' + domain + '" style="text-decoration:none;">🔗</a>';
+  }
+  return nameHtml + srcHtml;
+}
+
+function fmtRaw(v) {
+  var n = parseInt(v, 10);
+  return isNaN(n) ? 0 : n;
+}
+
+/* =========================================================================
+   RENDERERS
+   ========================================================================= */
+function renderStatus() {
+  var el = document.getElementById('status-bar');
+  var labels = {
+    stack_yaml:   { short: 'Stack config',       tip: 'Project metadata: GitHub repos, roles, and usage references' },
+    eco_medians:  { short: 'Ecosystem medians',   tip: 'Statistical median LOC/package per ecosystem (fallback). Superseded per-ecosystem by dep_loc_summary.csv when available.' },
+    dep_loc_measured: { short: 'Dep LOC measured', tip: 'Actual LOC measured for each unique (name, version) dependency via scc. Produced by 07+08. When present, replaces median estimates.' },
+    loc_csv:      { short: 'Lines of code',       tip: 'Per-project source line counts across all layers' },
+    deps_csv: { short: 'Dependency counts', tip: 'Direct and transitive package counts per project' },
+    loc_jsons: { short: 'Language breakdown', tip: 'Per-language LOC split within each project' },
+    deps_jsons: { short: 'Dependency lists', tip: 'Full list of direct packages per project, used for cross-layer analysis' }
+  };
+  var html = '';
+  for (var k in labels) {
+    var st = S.fileStatus[k];
+    var dcls = st === 'ok' ? 'dot-ok' : st === 'err' ? 'dot-err' : 'dot-pending';
+    var stLabel = st === 'ok' ? 'loaded' : st === 'err' ? 'unavailable' : 'pending';
+    html += '<div class="status-chip tip" data-tip="' + labels[k].tip + ' \u2014 ' + stLabel + '"><span class="dot ' + dcls + '"></span>' + labels[k].short + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderMetrics() {
+  var eqEl = document.getElementById('loc-eq');
+  var el   = document.getElementById('top-metrics');
+
+  var totalLOC = 0, totalDirect = 0, totalTrans = 0, allLangs = {};
+  S.loc.forEach(function(r) { totalLOC += fmtRaw(r.code_lines); });
+  S.deps.forEach(function(r) {
+    var d = fmtRaw(r.direct_deps); if (d > 0) totalDirect += d;
+    var t = fmtRaw(r.transitive_deps); if (t > 0) totalTrans += t;
+  });
+  var nProjects = S.loc.length || S.deps.length;
+  S.loc.forEach(function(r) {
+    (r.languages || '').split(';').forEach(function(l) { l = l.trim(); if (l) allLangs[l] = 1; });
+  });
+  var nLangs = Object.keys(allLangs).length;
+
+  // Per-ecosystem transitive LOC estimation.
+  // Priority per ecosystem:
+  //   1. dep_loc_summary.csv (actual scc measurement via 07+08) — uses total_loc_estimate directly.
+  //   2. ecosystem_loc_medians.csv (statistical fallback) — multiplies transitive count × median.
+  // Both sources can coexist: measured ecosystems use source 1, the rest fall back to source 2.
+  var ecoMediansAvailable  = Object.keys(S.ecoMedians).length > 0;
+  var depLocSummaryAvailable = Object.keys(S.depLocSummary).length > 0;
+
+  var estTransLow = 0, estTransHigh = 0;
+  var ecoBreakdown = {}; // { eco: { pkgs, loc, source: 'measured'|'median', median? } }
+
+  // Accumulate transitive package counts per ecosystem from deps rows (for median fallback).
+  var ecoTransCounts = {}; // { eco: total_transitive_pkg_count }
+  S.deps.forEach(function(r) {
+    var trans = parseInt(r.transitive_deps, 10);
+    if (!(trans > 0)) return;
+    var method = (r.transitive_method || '').replace(/^"|"$/g, '');
+    var primary = method.split(':')[0].toLowerCase().trim();
+    if (!primary) return;
+    ecoTransCounts[primary] = (ecoTransCounts[primary] || 0) + trans;
+  });
+
+  // Pass 1: ecosystems with measured data from dep_loc_summary.csv.
+  if (depLocSummaryAvailable) {
+    Object.keys(S.depLocSummary).forEach(function(eco) {
+      var d = S.depLocSummary[eco];
+      if (!d.total_loc_estimate) return;
+      estTransLow  += d.total_loc_estimate;
+      estTransHigh += d.total_loc_estimate;
+      ecoBreakdown[eco] = {
+        pkgs:   d.unique_pairs,
+        loc:    d.total_loc_estimate,
+        source: 'measured',
+        measured_ok: d.measured_ok,
+      };
+    });
+  }
+
+  // Pass 2: remaining ecosystems fall back to median × count.
+  if (ecoMediansAvailable) {
+    Object.keys(ecoTransCounts).forEach(function(eco) {
+      if (ecoBreakdown[eco]) return; // already measured
+      var ecoData = S.ecoMedians[eco];
+      if (!ecoData) return;
+      var trans  = ecoTransCounts[eco];
+      var median = ecoData.median;
+      var low    = Math.round(trans * median * 0.5);
+      var high   = Math.round(trans * median);
+      estTransLow  += low;
+      estTransHigh += high;
+      ecoBreakdown[eco] = {
+        pkgs:   trans,
+        loc:    Math.round((low + high) / 2),
+        source: 'median',
+        median: median,
+        locLow: low,
+        locHigh: high,
+      };
+    });
+  }
+
+  if (!estTransLow) { estTransLow = null; estTransHigh = null; }
+
+  // Build breakdown string for tooltip.
+  var anyMeasured = false, anyMedian = false;
+  var ecoTipParts = Object.keys(ecoBreakdown).sort().map(function(eco) {
+    var b = ecoBreakdown[eco];
+    if (b.source === 'measured') {
+      anyMeasured = true;
+      var failed = b.pkgs - b.measured_ok;
+      var fallbackStr = failed > 0 ? '; ' + failed + ' pkg' + (failed > 1 ? 's' : '') + ' not measurable, +' + (S.depLocSummary[eco].fallback_loc || 0).toLocaleString() + ' LOC estimated via median fallback' : '';
+      return eco + ': ' + b.loc.toLocaleString() + ' LOC (' + b.measured_ok + '/' + b.pkgs + ' pkgs measured' + fallbackStr + ')';
+    } else {
+      anyMedian = true;
+      return eco + ': ' + b.pkgs + ' pkgs \u00d7 ' + Math.round(b.median).toLocaleString() + ' LOC/pkg (median est.)';
+    }
+  });
+  var ecoTipStr;
+  if (!ecoMediansAvailable && !depLocSummaryAvailable) {
+    ecoTipStr = 'awaiting ecosystem_loc_medians.csv or dep_loc_summary.csv \u2014 run 06 or 07+08';
+  } else if (ecoTipParts.length) {
+    ecoTipStr = ecoTipParts.join('; ');
+  } else {
+    ecoTipStr = 'no matching ecosystems';
+  }
+
+  // Badge: "measured" if all ecosystems come from dep_loc_summary, "~ estimated" if all median,
+  // "~ partial" if mixed.
+  var transBadge = (!anyMeasured && !anyMedian) ? '\u00b7\u00b7\u00b7'
+    : (anyMeasured && !anyMedian) ? 'measured'
+    : (anyMeasured &&  anyMedian) ? '~ partial'
+    : '~ estimated';
+
+  var OPAQUE_LOW = 0, OPAQUE_HIGH = 0;
+  OPAQUE_COMPONENTS.forEach(function(c) { OPAQUE_LOW += c.loc_low; OPAQUE_HIGH += c.loc_high; });
+  if (!OPAQUE_LOW) { OPAQUE_LOW = 95000000; OPAQUE_HIGH = 172000000; }
+
+  // Total midpoints for proportional bar
+  var dMid = totalLOC || 0;
+  var tMid = estTransLow  ? Math.round((estTransLow  + estTransHigh) / 2) : 0;
+  var oMid = Math.round((OPAQUE_LOW + OPAQUE_HIGH) / 2);
+  var grand = dMid + tMid + oMid || 1;
+  var dPct  = (dMid / grand * 100).toFixed(1);
+  var tPct  = (tMid / grand * 100).toFixed(1);
+  var oPct  = (oMid / grand * 100).toFixed(1);
+
+  var totalLow  = (totalLOC || 0) + (estTransLow  || 0) + OPAQUE_LOW;
+  var totalHigh = (totalLOC || 0) + (estTransHigh || 0) + OPAQUE_HIGH;
+
+  function seg(cls, badge, valHtml, label, tipText, flexVal) {
+    var labelHtml = tipText
+      ? '<span class="tip" data-tip="' + tipText + '">' + label + '</span>'
+      : label;
+    return '<div class="loc-seg ' + cls + '" style="--flex:' + flexVal + '">' +
+      '<div>' +
+        '<div class="loc-seg-badge">' + badge + '</div>' +
+        '<div class="loc-seg-val">' + valHtml + '</div>' +
+      '</div>' +
+      '<div class="loc-seg-label">' + labelHtml + '</div>' +
+    '</div>';
+  }
+
+  var directVal  = totalLOC ? fmt(totalLOC) : '\u00b7\u00b7\u00b7';
+  // If fully measured, show a single value; otherwise show low–high range.
+  var transVal   = estTransLow
+    ? (anyMeasured && !anyMedian
+        ? fmt(estTransLow)
+        : '<span class="loc-seg-range">' + fmt(estTransLow) + '\u2013' + fmt(estTransHigh) + '</span>')
+    : '\u00b7\u00b7\u00b7';
+  var opaqueVal  = '<span class="loc-seg-range">' + fmt(OPAQUE_LOW) + '\u2013' + fmt(OPAQUE_HIGH) + '</span>';
+  var totalVal   = totalLow
+    ? '<span class="loc-seg-range">' + fmt(totalLow) + '\u2013' + fmt(totalHigh) + '</span>'
+    : '\u00b7\u00b7\u00b7';
+
+  eqEl.innerHTML =
+    '<div class="loc-eq-row">' +
+      seg('loc-seg-direct', 'measured',  directVal, 'Direct source LOC',
+        'Source lines of code across all measured open-source projects. Excludes blanks and comments.',
+        1) +
+      '<div class="loc-op">+</div>' +
+      seg('loc-seg-trans', transBadge, transVal, 'Transitive dep LOC',
+        (anyMeasured && !anyMedian
+          ? 'Measured LOC for each unique (name, version) dependency via scc. '
+          : anyMeasured
+          ? 'Mixed: measured where available (07+08), median estimate elsewhere. '
+          : 'Estimated LOC per ecosystem using measured median LOC/package ratios. ') +
+        ecoTipStr +
+        (anyMedian ? '. Median range: \u00d70.5\u2013\u00d71.' : ''),
+        1) +
+      '<div class="loc-op">+</div>' +
+      seg('loc-seg-opaque', '~ estimated', opaqueVal, 'Opaque &amp; proprietary LOC',
+        'Layer 5: cloud services, GPU drivers, OS, internal glue, proprietary training code. Based on public disclosures; cannot be measured from source.',
+        1) +
+      '<div class="loc-op">=</div>' +
+      '<div class="loc-seg loc-seg-total" style="--flex:1">' +
+        '<div>' +
+          '<div class="loc-seg-badge">total estimate</div>' +
+          '<div class="loc-seg-val">' + totalVal + '</div>' +
+        '</div>' +
+        '<div class="loc-seg-label">lines of code in the full AI supply chain</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="loc-bar-wrap">' +
+      '<div class="loc-bar">' +
+        '<div class="loc-bar-d" style="width:' + dPct + '%"></div>' +
+        '<div class="loc-bar-t" style="width:' + tPct + '%"></div>' +
+        '<div class="loc-bar-o" style="width:' + oPct + '%"></div>' +
+      '</div>' +
+    '</div>';
+
+  // Secondary stats
+  function mc(v, l, tip) {
+    var cls = v ? '' : ' ph';
+    var label = tip ? '<span class="tip" data-tip="' + tip + '">' + l + '</span>' : l;
+    return '<div class="mc"><div class="mc-val' + cls + '">' + (v ? fmt(v) : '\u00b7\u00b7\u00b7') + '</div><div class="mc-label">' + label + '</div></div>';
+  }
+  el.innerHTML =
+    mc(nProjects || null, 'open-source projects measured',
+      'Number of open-source repositories included in the stack across all four infrastructure layers.') +
+    mc(totalDirect || null, 'direct packages declared',
+      'Packages explicitly listed in manifests (go.mod, requirements.txt, package.json, pom.xml, \u2026) across all measured projects.') +
+    mc(totalTrans || null, 'transitive packages resolved',
+      'Full recursive closure of all dependencies. Excludes projects where the resolver could not run.');
+
+}
+
+function renderLangBar() {
+  var el = document.getElementById('langbar');
+  // aggregate from scc JSONs
+  var totals = {};
+  for (var key in S.locJsons) {
+    var arr = S.locJsons[key];
+    if (!Array.isArray(arr)) continue;
+    arr.forEach(function(entry) {
+      if (!entry.Name || !entry.Code) return;
+      var lang = entry.Name;
+      totals[lang] = (totals[lang] || 0) + (parseInt(entry.Code, 10) || 0);
+    });
+  }
+  // fallback: count from CSV language names (no LOC per lang, just presence)
+  if (Object.keys(totals).length === 0 && S.loc.length > 0) {
+    S.loc.forEach(function(r) {
+      (r.languages || '').split(';').forEach(function(l) {
+        l = l.trim(); if (l) totals[l] = (totals[l] || 0) + 1;
+      });
+    });
+  }
+  if (Object.keys(totals).length === 0) {
+    el.innerHTML = '<div class="langbar-title">Language distribution (awaiting scc data)</div><div class="langbar-track"></div>';
+    return;
+  }
+  var sorted = Object.entries(totals).sort(function(a,b) { return b[1] - a[1]; });
+  var grandTotal = sorted.reduce(function(s,e) { return s + e[1]; }, 0);
+  // top 10 + other
+  var top = sorted.slice(0, 10);
+  var otherVal = sorted.slice(10).reduce(function(s,e) { return s + e[1]; }, 0);
+  if (otherVal > 0) top.push(['Other', otherVal]);
+
+  var segs = top.map(function(e) {
+    var pct = (e[1] / grandTotal * 100);
+    var color = LANG_COLORS[e[0]] || '#888780';
+    var label = pct > 5 ? Math.round(pct) + '%' : '';
+    return '<div class="langbar-seg" style="flex:' + pct + ';background:' + color + ';" title="' + e[0] + ': ' + Math.round(pct) + '% (' + fmt(e[1]) + ' LOC)">' + label + '</div>';
+  }).join('');
+  var legend = top.map(function(e) {
+    var color = LANG_COLORS[e[0]] || '#888780';
+    var pct = Math.round(e[1] / grandTotal * 100);
+    return '<div class="langbar-li"><div class="dot" style="background:' + color + '"></div>' + e[0] + ' ' + pct + '%</div>';
+  }).join('');
+
+  el.innerHTML = '<div class="langbar-title">Language distribution by LOC</div><div class="langbar-track">' + segs + '</div><div class="langbar-legend">' + legend + '</div>';
+}
+
+function renderLayers() {
+  var el = document.getElementById('layer-stack');
+  // index loc/deps by layer+project
+  var locIdx = {};
+  S.loc.forEach(function(r) { locIdx[r.layer + '__' + r.project] = r; });
+  var depsIdx = {};
+  S.deps.forEach(function(r) { depsIdx[r.layer + '__' + r.project] = r; });
+
+  // First pass: compute totals per layer so bars can share a common scale
+  var layerTotals = {};
+  LAYERS.forEach(function(ly) {
+    var d = 0, t = 0;
+    S.loc.filter(function(r) { return r.layer === ly.key; }).forEach(function(r) {
+      var dep = depsIdx[r.layer + '__' + r.project] || {};
+      d += fmtRaw(dep.direct_deps);
+      var tv = fmtRaw(dep.transitive_deps); if (tv > 0) t += tv;
+    });
+    S.deps.filter(function(r) { return r.layer === ly.key && !locIdx[r.layer + '__' + r.project]; }).forEach(function(r) {
+      d += fmtRaw(r.direct_deps);
+      var tv = fmtRaw(r.transitive_deps); if (tv > 0) t += tv;
+    });
+    layerTotals[ly.key] = { direct: d, trans: t };
+  });
+  var stackTotalTrans = LAYERS.reduce(function(s, ly) { return s + layerTotals[ly.key].trans; }, 0);
+  var stackTotalDirect = LAYERS.reduce(function(s, ly) { return s + layerTotals[ly.key].direct; }, 0);
+  var stackGrandTotal = (stackTotalDirect + stackTotalTrans) || 1;
+
+  var html = '';
+  LAYERS.forEach(function(ly) {
+    // gather projects for this layer
+    var projects = [];
+    var layerLOC = 0, layerDirect = 0, layerTrans = 0;
+    var seenProjects = {};
+
+    // from loc data
+    S.loc.filter(function(r) { return r.layer === ly.key; }).forEach(function(r) {
+      seenProjects[r.project] = true;
+      var d = depsIdx[r.layer + '__' + r.project] || {};
+      var loc = fmtRaw(r.code_lines);
+      var direct = fmtRaw(d.direct_deps);
+      var trans = fmtRaw(d.transitive_deps);
+      layerLOC += loc;
+      layerDirect += direct;
+      if (trans > 0) layerTrans += trans;
+      projects.push({
+        name: r.project, loc: loc, langs: (r.languages || '').replace(/;/g, ', '),
+        direct: direct, trans: trans, method: (d.transitive_method || '')
+      });
+    });
+    // from deps data (projects that might not be in loc)
+    S.deps.filter(function(r) { return r.layer === ly.key && !seenProjects[r.project]; }).forEach(function(r) {
+      var direct = fmtRaw(r.direct_deps);
+      var trans = fmtRaw(r.transitive_deps);
+      layerDirect += direct;
+      if (trans > 0) layerTrans += trans;
+      projects.push({
+        name: r.project, loc: 0, langs: '', direct: direct, trans: trans,
+        method: (r.transitive_method || '')
+      });
+    });
+
+    var hasData = projects.length > 0;
+    var ratio = (layerDirect > 0 && layerTrans > 0) ? Math.round(layerTrans / layerDirect) : null;
+    // bar widths: both scaled against the stack-wide total transitive count,
+    // so each layer's bar shows its share of the full stack's dependency surface
+    var dPct = layerDirect > 0 ? Math.round(layerDirect / stackGrandTotal * 100) : 0;
+    var tPct = layerTrans  > 0 ? Math.round(layerTrans  / stackGrandTotal * 100) : 0;
+
+    // project table
+    var trows = '';
+    projects.sort(function(a,b) { return b.loc - a.loc; });
+    projects.forEach(function(p) {
+      // languages cell — show first 2, rest hidden behind toggle
+      var langList = p.langs ? p.langs.split(', ').map(function(l) { return l.trim(); }).filter(Boolean) : [];
+      var langCell;
+      if (langList.length === 0) {
+        langCell = '<span class="ph tip" data-tip="Language breakdown requires per-project JSON data from the scc analyzer.">not available</span>';
+      } else if (langList.length <= 3) {
+        langCell = langList.join(', ');
+      } else {
+        var visible = langList.slice(0, 2).join(', ');
+        var allLangsStr = langList.join(', ');
+        langCell = visible + ', <span class="tip" data-tip="' + allLangsStr + '" style="cursor:default;text-decoration:underline dotted;opacity:0.6;">+' + (langList.length - 2) + ' more</span>';
+      }
+      var subcat = (PROJECT_META[p.name] || {}).subcat || '';
+      var subcatHtml = subcat
+        ? '<span class="subcat-tag"><span class="subcat-tag-inner">' + subcat + '</span></span>'
+        : '';
+      // direct LOC
+      var directLocCell = p.loc > 0 ? fmt(p.loc) : '<span class="ph tip" data-tip="LOC data was not collected for this project.">not measured</span>';
+      // direct deps
+      var directDepsCell = p.direct > 0 ? fmt(p.direct) : '<span class="ph tip" data-tip="No declared dependencies found, or manifest was absent.">none found</span>';
+      // transitive deps
+      var transDepsCell;
+      if (p.trans > 0) {
+        transDepsCell = fmt(p.trans);
+      } else if (p.method.indexOf('manifest') >= 0) {
+        transDepsCell = '<span class="ph tip" data-tip="The package resolver was unavailable for this project. Only the manifest was read; the true transitive total is unknown and likely much larger.">not resolved</span>';
+      } else if (p.method === '' || p.method === 'none') {
+        transDepsCell = '<span class="ph tip" data-tip="No supported package manifest was found in this repository. Dependency count could not be determined.">no manifest</span>';
+      } else {
+        transDepsCell = '<span class="ph tip" data-tip="Transitive resolution returned zero or was skipped.">n/a</span>';
+      }
+      trows += '<tr>' +
+        '<td class="name" style="padding-left:4px;">' + subcatHtml + fmtProjectName(p.name) + '</td>' +
+        '<td class="langs">' + langCell + '</td>' +
+        '<td class="r">' + directLocCell + '</td>' +
+        '<td class="r">' + directDepsCell + '</td>' +
+        '<td class="r">' + transDepsCell + '</td></tr>';
+    });
+
+    html += '<div class="layer ' + ly.cls + '" onclick="this.classList.toggle(\'expanded\')">' +
+      '<div class="lh"><div>' +
+        '<div class="ln">' + ly.num + '</div>' +
+        '<div class="lt">' + ly.title + '</div>' +
+        '<div class="ls">' + ly.sub + '</div>' +
+      '</div></div>' +
+      '<div class="l-stats">' +
+        '<div class="l-stat"><span class="tip" data-tip="Source lines of code measured by scc, excluding blank lines and comments.">Direct LOC</span> <span>' + (layerLOC > 0 ? fmt(layerLOC) : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
+        '<div class="l-stat"><span class="tip" data-tip="Packages explicitly declared in manifests (requirements.txt, go.mod, package.json, etc.)">Direct Deps</span> <span>' + (layerDirect > 0 ? fmt(layerDirect) : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
+        '<div class="l-stat"><span class="tip" data-tip="Full transitive closure: all packages recursively required, not just those listed in the manifest.">Transitive Deps</span> <span>' + (layerTrans > 0 ? fmt(layerTrans) : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
+        '<div class="l-stat"><span class="tip" data-tip="Transitive \u00f7 direct: how many packages are pulled in for each one explicitly declared. Higher means greater hidden exposure.">Ratio</span> <span>' + (ratio !== null ? ratio + '\u00d7' : '<span class="ph">\u00b7\u00b7\u00b7\u00d7</span>') + '</span></div>' +
+      '</div>' +
+      '<div class="dep-bar-wrap">' +
+        '<div class="dep-bar-track tip" data-tip="Dark = direct packages declared in manifests (' + fmt(layerDirect) + '). Light = transitive packages resolved (' + fmt(layerTrans) + '). Both scaled against the stack-wide total of direct + transitive packages (' + fmt(stackGrandTotal) + ').">' +
+          '<div class="dep-bar-d" style="width:' + dPct + '%"></div>' +
+          '<div class="dep-bar-t" style="width:' + tPct + '%"></div>' +
+        '</div>' +
+        '<div class="dep-bar-labels">' + (function() {
+          if (!dPct && !tPct) return '';
+          var MIN_GAP = 14; // minimum % gap between left edge of "direct" and center of "transitive"
+          var tCenter = dPct + tPct / 2;
+          // ensure "transitive" label doesn't overlap the pinned "direct" label at left:0
+          if (tCenter < MIN_GAP) tCenter = MIN_GAP;
+          var dLabel = dPct > 0 ? '<span class="tip lbl-direct" data-tip="Packages explicitly declared in manifests for this layer: ' + fmt(layerDirect) + '.">direct</span>' : '';
+          var tLabel = tPct > 0 ? '<span class="tip" style="left:' + tCenter.toFixed(1) + '%;" data-tip="Full transitive closure for this layer: ' + fmt(layerTrans) + ' packages. Bar width = ' + tPct + '% of stack-wide total (' + fmt(stackGrandTotal) + ' direct + transitive packages across all layers).">transitive</span>' : '';
+          return dLabel + tLabel;
+        })() + '</div>' +
+      '</div>' +
+      '<div class="proj-grid"><table class="ptable"><thead><tr>' +
+        '<th>Project</th><th>Languages</th><th class="r">Direct LOC</th><th class="r">Direct Deps</th><th class="r">Transitive Deps</th>' +
+      '</tr></thead><tbody>' + (trows || '<tr><td colspan="5" class="ph" style="text-align:center;padding:8px">Awaiting data</td></tr>') +
+      '</tbody></table></div></div>';
+  });
+
+  // opaque layer — data from stack_config.yaml opaque_components
+  var opaqueTotal = { low: 0, high: 0 };
+  OPAQUE_COMPONENTS.forEach(function(c) { opaqueTotal.low += c.loc_low; opaqueTotal.high += c.loc_high; });
+  var opaqueTotalStr = opaqueTotal.low
+    ? fmt(opaqueTotal.low) + '\u2013' + fmt(opaqueTotal.high) + ' LOC'
+    : '95M\u2013172M LOC';
+  var opaqueRows = OPAQUE_COMPONENTS.map(function(c, i) {
+    var locStr = c.loc_low === c.loc_high
+      ? '\u007e' + fmt(c.loc_low)
+      : fmt(c.loc_low) + '\u2013' + fmt(c.loc_high);
+    var srcHtml = '';
+    if (c.usage_ref) {
+      var domain = c.usage_ref.replace(/^https?:\/\//, '').split('/')[0];
+      srcHtml = '&thinsp;<a href="' + c.usage_ref + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="src-link tip" data-tip="Reference: ' + domain + '" style="text-decoration:none;">🔗</a>';
+    }
+    var detailId = 'opaque-detail-' + i;
+    var arrowId  = 'opaque-arrow-' + i;
+    var detail = '';
+    if (c.notes)     detail += c.notes;
+    if (c.notes && c.loc_notes) detail += ' ';
+    if (c.loc_notes) detail += c.loc_notes;
+    var toggleFn = 'event.stopPropagation();' +
+      'var d=document.getElementById(\'' + detailId + '\');' +
+      'var a=document.getElementById(\'' + arrowId + '\');' +
+      'var open=d.style.display===\'table-row\';' +
+      'd.style.display=open?\'none\':\'table-row\';' +
+      'a.style.transform=open?\'none\':\'rotate(90deg)\';';
+    return '<tr onclick="' + toggleFn + '" style="cursor:pointer">' +
+      '<td class="name">' +
+        '<span id="' + arrowId + '" style="display:inline-block;font-size:8px;margin-right:4px;opacity:0.4;transition:transform 0.2s;vertical-align:middle">&#9654;</span>' +
+        c.name + srcHtml +
+      '</td>' +
+      '<td class="r">' + locStr + '</td>' +
+      '<td class="langs">' + c.languages + '</td>' +
+      '</tr>' +
+      '<tr id="' + detailId + '" style="display:none">' +
+      '<td colspan="3" style="padding:6px 8px 10px;font-size:10px;line-height:1.55;color:var(--fg2);border-top:none;background:rgba(128,128,128,0.04)">' + detail + '</td>' +
+      '</tr>';
+  }).join('');
+  if (!opaqueRows) opaqueRows = '<tr><td colspan="3" class="ph" style="text-align:center;padding:8px">Awaiting stack_config.yaml</td></tr>';
+
+  html += '<div class="layer l-opaque" onclick="this.classList.toggle(\'expanded\')">' +
+    '<div class="lh"><div><div class="ln">Layer 5</div><div class="lt">Opaque and proprietary</div>' +
+    '<div class="ls">Unmeasurable from public repositories</div></div></div>' +
+    '<div class="l-stats"><div class="l-stat"><span class="tip" data-tip="Order-of-magnitude estimate based on public information. Cannot be verified from source; actual values are proprietary.">Estimated range</span> <span>' + opaqueTotalStr + '</span></div></div>' +
+    '<div class="proj-grid"><table class="ptable"><thead><tr><th>Component</th><th class="r">Est. LOC</th><th>Languages</th></tr></thead><tbody>' +
+    opaqueRows + '</tbody></table></div></div>';
+
+  el.innerHTML = html;
+}
+
+function renderCrossLayer() {
+  var el = document.getElementById('xl-panel');
+  if (S.shared.length === 0) {
+    // check if deps JSONs have direct_deps lists
+    var depSets = {};
+    for (var key in S.depsJsons) {
+      var parts = key.split('__');
+      if (parts.length < 2) continue;
+      var layer = parts[0];
+      var data = S.depsJsons[key];
+      var deps = data.direct_deps || data.deps || [];
+      if (!Array.isArray(deps)) continue;
+      deps.forEach(function(d) {
+        d = (d + '').trim().toLowerCase();
+        if (!d) return;
+        if (!depSets[d]) depSets[d] = { layers: {}, count: 0 };
+        depSets[d].layers[layer] = true;
+        depSets[d].count++;
+      });
+    }
+    // filter to 2+ layers
+    var shared = [];
+    for (var dep in depSets) {
+      var nLayers = Object.keys(depSets[dep].layers).length;
+      if (nLayers >= 2) shared.push({ dep: dep, nLayers: nLayers, layers: depSets[dep].layers, count: depSets[dep].count });
+    }
+    shared.sort(function(a,b) { return b.nLayers - a.nLayers || b.count - a.count; });
+    if (shared.length > 0) {
+      renderCrossLayerFromComputed(el, shared.slice(0, 12));
+      return;
+    }
+    el.innerHTML = '<div style="font-size:11px;color:var(--fg3);text-align:center;padding:8px 0;">Awaiting data</div>';
+    return;
+  }
+  // from shared_deps_report.csv
+  // Sort by num_projects descending, then take top 12
+  var sortedShared = S.shared.slice().sort(function(a, b) {
+    return parseInt(b.num_projects) - parseInt(a.num_projects);
+  });
+  var top = sortedShared.slice(0, 12);
+  var layerKeys = ['data_pipelines','training','integration_serving','cross_cutting'];
+  var colors = [LAYER_COLORS.data_pipelines, LAYER_COLORS.training, LAYER_COLORS.integration_serving, LAYER_COLORS.cross_cutting];
+
+  var html = '<div style="font-size:10px;color:var(--fg3);padding-bottom:6px;border-bottom:0.5px solid var(--border);">' +
+    '<strong style="color:var(--fg2);">' + S.shared.length + '</strong> shared across layers<br><span style="opacity:0.6;font-size:9px;">top 12 by projects</span>' +
+    '</div>';
+  top.forEach(function(r) {
+    var presentLayers = (r.layers || '').split(';').map(function(l) { return l.trim(); });
+    var dots = layerKeys.map(function(lk, i) {
+      var on = presentLayers.indexOf(lk) >= 0;
+      return '<div class="xl-dot' + (on ? ' on' : '') + '" style="background:' + colors[i] + '"></div>';
+    }).join('');
+    var projCount = parseInt(r.num_projects) || 0;
+    html += '<div class="xl-row"><div class="xl-name tip" data-tip="' + r.dependency + '"><span class="xl-name-inner">' + r.dependency + '</span></div><div class="xl-dots">' + dots + '</div><div class="xl-count tip" data-tip="Appears in ' + projCount + ' project(s)">' + projCount + '</div></div>';
+  });
+  html += renderXLLegend();
+  el.innerHTML = html;
+}
+
+function renderCrossLayerFromComputed(el, shared) {
+  var layerKeys = ['data_pipelines','training','integration_serving','cross_cutting'];
+  var colors = [LAYER_COLORS.data_pipelines, LAYER_COLORS.training, LAYER_COLORS.integration_serving, LAYER_COLORS.cross_cutting];
+  var html = '';
+  shared.forEach(function(s) {
+    var dots = layerKeys.map(function(lk, i) {
+      var on = !!s.layers[lk];
+      return '<div class="xl-dot' + (on ? ' on' : '') + '" style="background:' + colors[i] + '"></div>';
+    }).join('');
+    html += '<div class="xl-row"><div class="xl-name tip" data-tip="' + s.dep + '"><span class="xl-name-inner">' + s.dep + '</span></div><div class="xl-dots">' + dots + '</div><div class="xl-count tip" data-tip="Appears in ' + s.count + ' project(s) across ' + s.nLayers + ' layer(s)">' + s.count + '</div></div>';
+  });
+  html += renderXLLegend();
+  el.innerHTML = html;
+}
+
+function renderXLLegend() {
+  return '<div class="xl-legend">' +
+    '<div class="xl-li"><div class="dot" style="width:7px;height:7px;border-radius:50%;background:' + LAYER_COLORS.data_pipelines + '"></div>Data</div>' +
+    '<div class="xl-li"><div class="dot" style="width:7px;height:7px;border-radius:50%;background:' + LAYER_COLORS.training + '"></div>Train</div>' +
+    '<div class="xl-li"><div class="dot" style="width:7px;height:7px;border-radius:50%;background:' + LAYER_COLORS.integration_serving + '"></div>Serve</div>' +
+    '<div class="xl-li"><div class="dot" style="width:7px;height:7px;border-radius:50%;background:' + LAYER_COLORS.cross_cutting + '"></div>Infra</div>' +
+  '</div>';
+}
+
+function renderAll() {
+  renderStatus();
+  renderMetrics();
+  renderLangBar();
+  renderLayers();
+  renderCrossLayer();
+  // project count from loc CSV (unique projects), fallback to deps CSV
+  var projSet = {};
+  S.loc.forEach(function(r) { if (r.project) projSet[r.layer + '__' + r.project] = 1; });
+  S.deps.forEach(function(r) { if (r.project) projSet[r.layer + '__' + r.project] = 1; });
+  var n = Object.keys(projSet).length;
+  var el = document.getElementById('proj-count');
+  if (el && n > 0) el.textContent = n;
+}
+
+/* =========================================================================
+   DATA LOADING — HTTP FETCH
+   ========================================================================= */
+function fetchText(url) {
+  return fetch(url).then(function(r) {
+    if (!r.ok) throw new Error(r.status);
+    return r.text();
+  });
+}
+function fetchJSON(url) {
+  return fetch(url).then(function(r) {
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  });
+}
+
+function loadViaHTTP() {
+  // 0. stack_config.yaml — project metadata (repo URLs, usage refs, roles)
+  fetchText('stack_config.yaml').then(function(text) {
+    var _yaml = parseStackYAML(text); PROJECT_META = _yaml.meta; OPAQUE_COMPONENTS = _yaml.opaque;
+    S.fileStatus.stack_yaml = 'ok';
+    renderAll();
+  }).catch(function() { S.fileStatus.stack_yaml = 'err'; renderAll(); });
+
+  // 1. loc_summary.csv
+  fetchText('results/loc_summary.csv').then(function(text) {
+    S.loc = parseCSV(text);
+    S.fileStatus.loc_csv = 'ok';
+    renderAll();
+    // try loading scc JSONs based on discovered projects
+    loadSccJsons();
+  }).catch(function() { S.fileStatus.loc_csv = 'err'; renderAll(); });
+
+  // 2. deps_summary.csv
+  fetchText('results/deps_summary.csv').then(function(text) {
+    S.deps = parseCSV(text);
+    S.fileStatus.deps_csv = 'ok';
+    renderAll();
+    // try loading dep JSONs
+    loadDepJsons();
+  }).catch(function() { S.fileStatus.deps_csv = 'err'; renderAll(); });
+
+  // 3. shared_deps_report.csv
+  fetchText('results/shared_deps_report.csv').then(function(text) {
+    S.shared = parseCSV(text);
+    S.fileStatus.shared_csv = 'ok';
+    renderAll();
+  }).catch(function() { S.fileStatus.shared_csv = 'err'; renderAll(); });
+
+  // 4. ecosystem_loc_medians.csv (statistical fallback)
+  fetchText('results/ecosystem_loc_medians.csv').then(function(text) {
+    S.ecoMedians = parseEcoMedians(parseCSV(text));
+    S.fileStatus.eco_medians = 'ok';
+    renderAll();
+  }).catch(function() { S.fileStatus.eco_medians = 'err'; renderAll(); });
+
+  // 5. dep_loc_summary.csv (measured — optional, produced by 07+08)
+  fetchText('results/dep_loc_summary.csv').then(function(text) {
+    S.depLocSummary = parseDepLocSummary(parseCSV(text));
+    S.fileStatus.dep_loc_measured = 'ok';
+    renderAll();
+  }).catch(function() { S.fileStatus.dep_loc_measured = 'err'; renderAll(); });
+}
+
+function loadSccJsons() {
+  var keys = [];
+  S.loc.forEach(function(r) {
+    var k = r.layer + '__' + r.project;
+    if (keys.indexOf(k) < 0) keys.push(k);
+  });
+  if (keys.length === 0) return;
+  var loaded = 0;
+  keys.forEach(function(k) {
+    fetchJSON('results/loc_per_project/' + k + '.json').then(function(data) {
+      S.locJsons[k] = data;
+      loaded++;
+      if (loaded >= keys.length) { S.fileStatus.loc_jsons = 'ok'; renderAll(); }
+    }).catch(function() {
+      loaded++;
+      if (loaded >= keys.length) {
+        S.fileStatus.loc_jsons = Object.keys(S.locJsons).length > 0 ? 'ok' : 'err';
+        renderAll();
+      }
+    });
+  });
+}
+
+function loadDepJsons() {
+  var keys = [];
+  S.deps.forEach(function(r) {
+    var k = r.layer + '__' + r.project;
+    if (keys.indexOf(k) < 0) keys.push(k);
+  });
+  if (keys.length === 0) return;
+  var loaded = 0;
+  keys.forEach(function(k) {
+    fetchJSON('results/deps_per_project/' + k + '.json').then(function(data) {
+      S.depsJsons[k] = data;
+      loaded++;
+      if (loaded >= keys.length) { S.fileStatus.deps_jsons = 'ok'; renderAll(); }
+    }).catch(function() {
+      loaded++;
+      if (loaded >= keys.length) {
+        S.fileStatus.deps_jsons = Object.keys(S.depsJsons).length > 0 ? 'ok' : 'err';
+        renderAll();
+      }
+    });
+  });
+}
+
+/* =========================================================================
+   DATA LOADING — MANUAL FILE INPUT
+   ========================================================================= */
+function handleFile(input) {
+  var key = input.getAttribute('data-key');
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    if (key === 'stack_yaml')  { var _yaml = parseStackYAML(text); PROJECT_META = _yaml.meta; OPAQUE_COMPONENTS = _yaml.opaque; S.fileStatus.stack_yaml = 'ok'; }
+    if (key === 'eco_medians')      { S.ecoMedians      = parseEcoMedians(parseCSV(text));      S.fileStatus.eco_medians      = 'ok'; }
+    if (key === 'dep_loc_measured') { S.depLocSummary   = parseDepLocSummary(parseCSV(text));   S.fileStatus.dep_loc_measured  = 'ok'; }
+    if (key === 'loc_csv')     { S.loc    = parseCSV(text); S.fileStatus.loc_csv    = 'ok'; }
+    if (key === 'deps_csv')    { S.deps   = parseCSV(text); S.fileStatus.deps_csv   = 'ok'; }
+    if (key === 'shared_csv')  { S.shared = parseCSV(text); S.fileStatus.shared_csv = 'ok'; }
+    renderAll();
+  };
+  reader.readAsText(file);
+}
+
+function handleFiles(input) {
+  var key = input.getAttribute('data-key');
+  var files = input.files;
+  if (!files || files.length === 0) return;
+  var remaining = files.length;
+  for (var i = 0; i < files.length; i++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = JSON.parse(e.target.result);
+          var fname = file.name.replace('.json', '');
+          if (key === 'loc_jsons') S.locJsons[fname] = data;
+          if (key === 'deps_jsons') S.depsJsons[fname] = data;
+        } catch(ex) {}
+        remaining--;
+        if (remaining <= 0) {
+          if (key === 'loc_jsons') S.fileStatus.loc_jsons = 'ok';
+          if (key === 'deps_jsons') S.fileStatus.deps_jsons = 'ok';
+          renderAll();
+        }
+      };
+      reader.readAsText(file);
+    })(files[i]);
+  }
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+renderAll();
+
+// detect if served via HTTP (not file://)
+if (window.location.protocol !== 'file:') {
+  document.getElementById('loader-section').style.display = 'none';
+  loadViaHTTP();
+} else {
+  // show manual loader prominently
+  document.getElementById('loader-section').style.borderStyle = 'solid';
+}
+
+
+
+/* =========================================================================
+   SVG ANIMATED INFRASTRUCTURE DIAGRAM
+   Same data (INFRA_LAYERS, ARTIFACTS, ROUTES, TRUST_ACTORS) as the canvas
+   version above. All geometry is declarative SVG; packets are SVG elements
+   moved each frame via setAttribute. Trails use a <polyline> per packet.
+   Resolution-independent: no pixel buffer, scales perfectly at any zoom.
+   ========================================================================= */
+(function() {
+
+var svg    = document.getElementById('infra-svg');
+var NS     = 'http://www.w3.org/2000/svg';
+var svgW   = 0, svgH = 0;
+var svgRunning = true, svgRAF = null;
+var svgShowBoundaries = false;
+
+/* ── shared data (same as canvas version) ──────────────────────────────── */
+var SVG_LAYERS = [
+  { key:'data',    label:'Layer 1 — Data Pipelines',          color:'#0A8C5E', colorDim:'rgba(16,185,129,0.13)',
+    nodes:[
+      {id:'raw',   label:'Raw\nIngestion',    sub:'Kafka',               xform:'data ingestion'    },
+      {id:'store', label:'Object\nStorage',   sub:'MinIO',               xform:'data ingestion'    },
+      {id:'proc',  label:'Preprocessing',     sub:'Spark',               xform:'data preprocessing'},
+      {id:'annot', label:'Annotation',        sub:'Label Studio',        xform:'data preprocessing'},
+      {id:'valid', label:'Validation',        sub:'Great Expectations',  xform:'data preprocessing'},
+      {id:'ver',   label:'Versioning',        sub:'DVC',                 xform:'data preprocessing'},
+      {id:'embed', label:'Embedding\nModel',  sub:'SentenceTransformers',xform:'tokenization'      },
+      {id:'vecdb', label:'Vector DB',         sub:'Milvus',              xform:'data ingestion'    },
+    ]},
+  { key:'training',label:'Layer 2 — Training',                color:'#1A6FBF', colorDim:'rgba(59,130,246,0.13)',
+    nodes:[
+      {id:'sched',   label:'Job\nScheduler',  sub:'Slurm / KFP',     xform:'containerization'},
+      {id:'gpu',     label:'GPU\nRuntime',    sub:'NCCL / CUDA',     xform:'model training'  },
+      {id:'fw',      label:'Framework',       sub:'PyTorch',         xform:'model training'  },
+      {id:'dist',    label:'Distributed',     sub:'DeepSpeed',       xform:'model training'  },
+      {id:'finetune',label:'Fine-tuning',     sub:'PEFT / TRL',      xform:'fine-tuning'     },
+      {id:'eval',    label:'Evaluation',      sub:'LM-Eval',         xform:'evaluation'      },
+      {id:'registry',label:'Registry',        sub:'MLflow / HF Hub', xform:'serialization'   },
+    ]},
+  { key:'serving', label:'Layer 3 — Integration & Serving',   color:'#C4620A', colorDim:'rgba(249,115,22,0.13)',
+    nodes:[
+      {id:'quant',  label:'Quantize',          sub:'AWQ / ONNX',      xform:'quantization'      },
+      {id:'infer',  label:'Inference\nEngine', sub:'vLLM / TRT-LLM',  xform:'serialization'     },
+      {id:'server', label:'Inference\nServer', sub:'Triton',           xform:'system integration'},
+      {id:'ray',    label:'Serving\nRuntime',  sub:'Ray Serve',        xform:'system integration'},
+      {id:'app',    label:'App\nOrchestration',sub:'LangChain',        xform:'prompt chaining'   },
+      {id:'prompts',label:'Prompts',           sub:'PromptFlow',       xform:'prompt engineering'},
+      {id:'guards', label:'Guardrails',        sub:'Guardrails AI',    xform:'system integration'},
+      {id:'gateway',label:'API\nGateway',      sub:'Envoy',            xform:'system integration'},
+    ]},
+  { key:'cross',   label:'Layer 4 — Cross-Cutting Infrastructure', color:'#6B48CC', colorDim:'rgba(139,92,246,0.13)',
+    nodes:[
+      {id:'k8s',    label:'Kubernetes',        sub:'k8s / containerd',  xform:'containerization'    },
+      {id:'iac',    label:'Infra\nas Code',    sub:'Terraform',          xform:'containerization'    },
+      {id:'cicd',   label:'CI / CD',           sub:'Argo CD',            xform:'containerization'    },
+      {id:'wf',     label:'Workflows',         sub:'Argo Workflows',     xform:'containerization'    },
+      {id:'metrics',label:'Metrics',           sub:'Prometheus',         xform:'monitoring & feedback'},
+      {id:'trace',  label:'Tracing',           sub:'OpenTelemetry',      xform:'log aggregation'     },
+      {id:'logs',   label:'Logs',              sub:'Loki / Grafana',     xform:'log aggregation'     },
+    ]},
+  { key:'opaque',  label:'Layer 5 — Opaque & Proprietary',    color:'#78716C', colorDim:'rgba(120,113,108,0.12)',
+    nodes:[
+      {id:'os',     label:'OS & libc',         sub:'Linux / glibc',     xform:'containerization'  },
+      {id:'gpu_drv',label:'GPU Drivers',        sub:'CUDA / cuDNN',      xform:'model training'    },
+      {id:'cloud',  label:'Cloud\nServices',   sub:'AWS / GCP / Azure', xform:'data ingestion'    },
+      {id:'glue',   label:'Internal\nGlue',    sub:'DAGs / configs',    xform:'system integration'},
+    ]},
+];
+
+var SVG_ARTIFACTS = [
+  {name:'raw dataset',         color:'#059669', shape:'square',  size:4.0},
+  {name:'curated dataset',     color:'#0891B2', shape:'square',  size:4.0},
+  {name:'retrieval corpus',    color:'#2563EB', shape:'square',  size:4.0},
+  {name:'vector index',        color:'#6366F1', shape:'square',  size:4.0},
+  {name:'model checkpoint',    color:'#D97706', shape:'diamond', size:5.0},
+  {name:'tokenizer',           color:'#92400E', shape:'circle',  size:3.5},
+  {name:'training intermediate',color:'#B45309',shape:'diamond', size:3.5},
+  {name:'evaluation report',   color:'#65A30D', shape:'circle',  size:3.5},
+  {name:'fine-tuned model',    color:'#DC2626', shape:'diamond', size:5.0},
+  {name:'quantized model',     color:'#EA580C', shape:'diamond', size:4.5},
+  {name:'container image',     color:'#7C3AED', shape:'circle',  size:3.5},
+  {name:'prompt artifact',     color:'#BE185D', shape:'circle',  size:3.5},
+  {name:'safety guardrail',    color:'#9D174D', shape:'circle',  size:3.5},
+  {name:'operation logs',      color:'#64748B', shape:'circle',  size:3.0},
+  {name:'telemetry data',      color:'#475569', shape:'circle',  size:3.0},
+  {name:'configuration',       color:'#C026D3', shape:'circle',  size:3.0},
+];
+
+var SVG_ROUTES = [
+  {art:0,  nodes:['raw','store'],                            interval:4.0, delay:0.0 },
+  {art:0,  nodes:['store','proc','valid','ver'],             interval:4.5, delay:0.8 },
+  {art:1,  nodes:['ver','embed'],                            interval:5.5, delay:1.5 },
+  {art:2,  nodes:['proc','annot','embed','vecdb'],           interval:5.0, delay:2.0 },
+  {art:1,  nodes:['ver','sched','gpu','fw','dist'],          interval:5.5, delay:1.2 },
+  {art:6,  nodes:['fw','dist','registry'],                   interval:6.0, delay:3.5 },
+  {art:4,  nodes:['dist','eval'],                            interval:6.5, delay:4.0 },
+  {art:7,  nodes:['eval','registry'],                        interval:6.5, delay:4.8 },
+  {art:4,  nodes:['registry','finetune','eval','registry'],  interval:7.0, delay:2.5 },
+  {art:4,  nodes:['dist','registry'],                        interval:5.5, delay:3.0 },
+  {art:5,  nodes:['fw','registry'],                          interval:8.0, delay:1.8 },
+  {art:4,  nodes:['registry','k8s','cicd'],                  interval:6.0, delay:0.5 },
+  {art:10, nodes:['cicd','k8s'],                             interval:6.0, delay:1.3 },
+  {art:4,  nodes:['registry','quant'],                       interval:5.5, delay:0.3 },
+  {art:9,  nodes:['quant','infer'],                          interval:5.5, delay:1.1 },
+  {art:9,  nodes:['infer','server','ray'],                   interval:5.0, delay:2.2 },
+  {art:7,  nodes:['eval','prompts'],                         interval:7.0, delay:5.0 },
+  {art:11, nodes:['prompts','app'],                          interval:5.0, delay:5.5 },
+  {art:11, nodes:['prompts','app','guards','gateway'],       interval:5.0, delay:3.8 },
+  {art:3,  nodes:['vecdb','app'],                            interval:4.5, delay:1.6 },
+  {art:12, nodes:['guards','gateway'],                       interval:5.5, delay:4.2 },
+  {art:15, nodes:['wf','sched'],                             interval:7.0, delay:2.8 },
+  {art:15, nodes:['iac','k8s'],                              interval:8.0, delay:3.5 },
+  {art:13, nodes:['dist','logs'],                            interval:4.0, delay:0.9 },
+  {art:13, nodes:['server','logs'],                          interval:3.5, delay:2.0 },
+  {art:14, nodes:['server','trace','metrics'],               interval:4.0, delay:1.5 },
+  {art:14, nodes:['dist','metrics','logs'],                  interval:4.5, delay:3.0 },
+  {art:10, nodes:['k8s','os'],                               interval:9.0, delay:5.5 },
+  {art:10, nodes:['gpu','gpu_drv'],                          interval:8.0, delay:2.0 },
+  {art:10, nodes:['k8s','cloud'],                            interval:9.0, delay:4.5 },
+  {art:15, nodes:['cicd','glue'],                            interval:9.5, delay:6.0 },
+];
+
+var SVG_TRUST_ACTORS = [
+  {name:'Dataset Curators',   color:'#0E7A4A', ring:'rgba(14,122,74,0.55)',
+   nodes:new Set(['raw','store','annot'])},
+  {name:'Model Provider',     color:'#1D4ED8', ring:'rgba(29,78,216,0.55)',
+   nodes:new Set(['proc','valid','ver','embed','vecdb','sched','gpu','fw','dist','finetune','eval','registry'])},
+  {name:'Deployment Operator',color:'#B45309', ring:'rgba(180,83,9,0.55)',
+   nodes:new Set(['quant','infer','server','ray','app','prompts','guards','gateway','k8s','iac','cicd','wf','metrics','trace','logs'])},
+  {name:'Opaque Vendors',     color:'#7C22C4', ring:'rgba(124,34,196,0.55)',
+   nodes:new Set(['os','gpu_drv','cloud','glue'])},
+];
+var SVG_NODE_ACTOR = {};
+SVG_TRUST_ACTORS.forEach(function(a){ a.nodes.forEach(function(id){ SVG_NODE_ACTOR[id]=a; }); });
+
+/* ── layout state ───────────────────────────────────────────────────────── */
+var SVGL = { layerH:0, nodeH:0, nodes:{} };  /* nodes: id → {cx,cy,nW,nH,color,layerColor} */
+
+function svgComputeLayout() {
+  var PAD_TOP=8, PAD_SIDE=16, GAP=6;
+  var usableH = svgH - PAD_TOP;
+  var usableW = svgW - PAD_SIDE*2;
+  SVGL.layerH = usableH / SVG_LAYERS.length;
+  SVGL.nodeH  = Math.min(56, SVGL.layerH * 0.60);
+  SVGL.nodes  = {};
+  SVG_LAYERS.forEach(function(layer, li) {
+    var n      = layer.nodes.length;
+    var nW     = Math.min(96, (usableW - (n-1)*GAP) / n);
+    var totalW = n*nW + (n-1)*GAP;
+    var startX = PAD_SIDE + (usableW - totalW) / 2;
+    var bandTop= PAD_TOP + li * SVGL.layerH;
+    var cy     = bandTop + SVGL.layerH / 2;
+    layer.nodes.forEach(function(node, ni) {
+      var cx = startX + ni*(nW+GAP) + nW/2;
+      SVGL.nodes[node.id] = { cx:cx, cy:cy, nW:nW, nH:SVGL.nodeH,
+                               color:layer.color, key:layer.key };
+    });
+  });
+}
+
+/* ── bezier helper (same formula as canvas version) ─────────────────────── */
+function svgBez(a, b, t) {
+  var cpx = (a.cx+b.cx)/2 + (b.cy-a.cy)*0.12;
+  var cpy = (a.cy+b.cy)/2 + (b.cx-a.cx)*0.05;
+  var u   = 1-t;
+  return { x: u*u*a.cx + 2*u*t*cpx + t*t*b.cx,
+           y: u*u*a.cy + 2*u*t*cpy + t*t*b.cy };
+}
+function svgBezCP(a, b) {
+  return { x: (a.cx+b.cx)/2 + (b.cy-a.cy)*0.12,
+           y: (a.cy+b.cy)/2 + (b.cx-a.cx)*0.05 };
+}
+
+/* ── SVG element creation helpers ───────────────────────────────────────── */
+function el(tag, attrs) {
+  var e = document.createElementNS(NS, tag);
+  Object.keys(attrs).forEach(function(k){ e.setAttribute(k, attrs[k]); });
+  return e;
+}
+function setAttrs(e, attrs) {
+  Object.keys(attrs).forEach(function(k){ e.setAttribute(k, attrs[k]); });
+}
+
+/* ── rounded rect path ──────────────────────────────────────────────────── */
+function rrectPath(x, y, w, h, r) {
+  return 'M'+(x+r)+' '+y
+       +' L'+(x+w-r)+' '+y+' Q'+(x+w)+' '+y+' '+(x+w)+' '+(y+r)
+       +' L'+(x+w)+' '+(y+h-r)+' Q'+(x+w)+' '+(y+h)+' '+(x+w-r)+' '+(y+h)
+       +' L'+(x+r)+' '+(y+h)+' Q'+x+' '+(y+h)+' '+x+' '+(y+h-r)
+       +' L'+x+' '+(y+r)+' Q'+x+' '+y+' '+(x+r)+' '+y+' Z';
+}
+
+/* ── artifact shape path (centered on 0,0) ──────────────────────────────── */
+function artPath(art) {
+  var s = art.size;
+  if (art.shape === 'diamond') {
+    var d = s*1.3;
+    return 'M0 '+(-d)+' L'+d+' 0 L0 '+d+' L'+(-d)+' 0 Z';
+  } else if (art.shape === 'square') {
+    return 'M'+(-s)+' '+(-s)+' h'+(s*2)+' v'+(s*2)+' h'+(-s*2)+' Z';
+  } else {
+    /* circle approximated as path for uniformity */
+    return null; /* use <circle> */
+  }
+}
+
+/* ── build static SVG structure ─────────────────────────────────────────── */
+var svgGroups = {}; /* named layers for draw-order control */
+
+function buildSVGStructure() {
+  /* clear */
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  /* defs: filter for glow */
+  var defs = el('defs', {});
+  /* glow filter */
+  var filt = el('filter', {id:'svg-glow', x:'-50%', y:'-50%', width:'200%', height:'200%'});
+  var fe1  = el('feGaussianBlur', {'in':'SourceGraphic', stdDeviation:'3', result:'blur'});
+  var fe2  = el('feComposite',    {'in':'SourceGraphic', in2:'blur', operator:'over'});
+  filt.appendChild(fe1); filt.appendChild(fe2);
+  defs.appendChild(filt);
+  svg.appendChild(defs);
+
+  /* layer groups in draw order */
+  ['bands','halos','connectors','crossings','nodes','tags','packets'].forEach(function(name) {
+    var g = el('g', {'id':'svg-g-'+name});
+    svg.appendChild(g);
+    svgGroups[name] = g;
+  });
+}
+
+/* ── populate static layers (bands + nodes) ─────────────────────────────── */
+var svgNodeEls = {};   /* id → { rect, label lines[], subLabel, xformGroup } */
+var svgHaloEls = {};   /* id → path el */
+var svgTagEls  = {};   /* actorName → g el */
+var svgConnEls = [];   /* connector path els */
+
+function populateBandsAndNodes() {
+  var gBands = svgGroups['bands'];
+  var gNodes = svgGroups['nodes'];
+  var PAD_TOP=8, PAD_SIDE=16;
+
+  SVG_LAYERS.forEach(function(layer, li) {
+    var bandTop = PAD_TOP + li * SVGL.layerH;
+
+    /* band rect */
+    var bandRect = el('rect', {
+      x: PAD_SIDE/2, y: bandTop+1,
+      width: svgW - PAD_SIDE, height: SVGL.layerH-2,
+      rx:7, fill: layer.colorDim
+    });
+    gBands.appendChild(bandRect);
+
+    /* band label */
+    var bandLbl = el('text', {
+      x: PAD_SIDE, y: bandTop+13,
+      'font-family':'"SF Mono","Consolas",monospace',
+      'font-size':'8.5', 'font-weight':'bold',
+      fill: layer.color, opacity:'0.80',
+      'text-anchor':'start'
+    });
+    bandLbl.textContent = layer.label.toUpperCase();
+    gBands.appendChild(bandLbl);
+
+    /* nodes */
+    layer.nodes.forEach(function(node) {
+      var pos = SVGL.nodes[node.id];
+      if (!pos) return;
+      var x = pos.cx - pos.nW/2, y = pos.cy - pos.nH/2;
+
+      /* node box */
+      var nodeRect = el('path', {
+        d: rrectPath(x, y, pos.nW, pos.nH, 5),
+        fill: layer.color, 'fill-opacity': '0.14',
+        stroke: layer.color, 'stroke-width':'1', 'stroke-opacity':'0.55'
+      });
+      gNodes.appendChild(nodeRect);
+
+      /* labels */
+      var lines = node.label.split('\n');
+      var fsz   = Math.max(7, Math.min(10, pos.nW/9 + 3.5));
+      var subFsz= Math.max(6, fsz-1.5);
+      var lineH = fsz+2;
+      var totalLH = lines.length * lineH;
+      var totalH  = totalLH + subFsz + 3;
+      var startY  = pos.cy - totalH/2 + lineH/2;
+
+      var labelEls = lines.map(function(line, li2) {
+        var t = el('text', {
+          x: pos.cx, y: startY + li2*lineH,
+          'font-family':'"Inter",system-ui,sans-serif',
+          'font-size': fsz, 'font-weight':'bold',
+          fill:'#1a1a1a', opacity:'0.85',
+          'text-anchor':'middle', 'dominant-baseline':'middle'
+        });
+        t.textContent = line;
+        gNodes.appendChild(t);
+        return t;
+      });
+
+      var subEl = el('text', {
+        x: pos.cx, y: startY + totalLH + subFsz/2 + 1,
+        'font-family':'"Inter",system-ui,sans-serif',
+        'font-size': subFsz,
+        fill: layer.color, opacity:'0.60',
+        'text-anchor':'middle', 'dominant-baseline':'middle'
+      });
+      subEl.textContent = node.sub;
+      gNodes.appendChild(subEl);
+
+      /* xform label group (hidden until pulse) */
+      var xg = el('g', {opacity:'0', visibility:'hidden'});
+      var xbg = el('rect', {rx:'3', fill:'rgba(255,255,255,0.82)'});
+      var xt  = el('text', {
+        'font-family':'"SF Mono","Consolas",monospace',
+        'font-size':'8.5', 'font-weight':'bold',
+        fill: layer.color,
+        'text-anchor':'middle', 'dominant-baseline':'middle'
+      });
+      xt.textContent = '\u2192 ' + (node.xform || '');
+      xg.appendChild(xbg);
+      xg.appendChild(xt);
+      gNodes.appendChild(xg);
+
+      svgNodeEls[node.id] = { rect: nodeRect, labels: labelEls, sub: subEl,
+                               xg: xg, xbg: xbg, xt: xt,
+                               baseColor: layer.color, x:x, y:y,
+                               cx:pos.cx, cy:pos.cy, nW:pos.nW, nH:pos.nH, fsz:fsz };
+    });
+  });
+}
+
+function populateConnectors() {
+  var g = svgGroups['connectors'];
+  while (g.firstChild) g.removeChild(g.firstChild);
+  svgConnEls = [];
+
+  SVG_ROUTES.forEach(function(route) {
+    for (var i=0; i<route.nodes.length-1; i++) {
+      var a = SVGL.nodes[route.nodes[i]];
+      var b = SVGL.nodes[route.nodes[i+1]];
+      if (!a || !b) continue;
+      var cp = svgBezCP(a, b);
+      var d  = 'M'+a.cx+' '+a.cy+' Q'+cp.x+' '+cp.y+' '+b.cx+' '+b.cy;
+      var art = SVG_ARTIFACTS[route.art];
+      var p = el('path', {
+        d:d, fill:'none',
+        stroke: art.color, 'stroke-opacity':'0.18',
+        'stroke-width':'1', 'stroke-dasharray':'3 5'
+      });
+      g.appendChild(p);
+      svgConnEls.push(p);
+    }
+  });
+}
+
+function populateHalos() {
+  var g = svgGroups['halos'];
+  while (g.firstChild) g.removeChild(g.firstChild);
+  svgHaloEls = {};
+  svgTagEls  = {};
+  if (!svgShowBoundaries) return;
+
+  var pad = 4;
+  SVG_LAYERS.forEach(function(layer) {
+    layer.nodes.forEach(function(node) {
+      var pos   = SVGL.nodes[node.id];
+      var actor = SVG_NODE_ACTOR[node.id];
+      if (!pos || !actor) return;
+      var x=pos.cx-pos.nW/2-pad, y=pos.cy-pos.nH/2-pad;
+      var w=pos.nW+pad*2, h=pos.nH+pad*2;
+      var halo = el('path', {
+        d: rrectPath(x, y, w, h, 7),
+        fill: actor.color, 'fill-opacity':'0.06',
+        stroke: actor.ring, 'stroke-width':'2.5'
+      });
+      g.appendChild(halo);
+      svgHaloEls[node.id] = halo;
+    });
+  });
+
+  /* actor tags — one per actor at topmost-leftmost node */
+  var gTags = svgGroups['tags'];
+  while (gTags.firstChild) gTags.removeChild(gTags.firstChild);
+  var seen = {};
+  SVG_LAYERS.forEach(function(layer) {
+    layer.nodes.forEach(function(node) {
+      var pos   = SVGL.nodes[node.id];
+      var actor = SVG_NODE_ACTOR[node.id];
+      if (!pos || !actor) return;
+      if (!seen[actor.name] || pos.cy < seen[actor.name].cy ||
+         (pos.cy === seen[actor.name].cy && pos.cx < seen[actor.name].cx)) {
+        seen[actor.name] = {cx:pos.cx, cy:pos.cy, nW:pos.nW, nH:pos.nH, actor:actor};
+      }
+    });
+  });
+  Object.keys(seen).forEach(function(name) {
+    var s=seen[name], actor=s.actor;
+    /* estimate text width: ~5.5px per char + 8px padding */
+    var tw = name.length * 5.5 + 8;
+    var th = 13;
+    var tx = s.cx + s.nW/2 - tw + 4;
+    var ty = s.cy - s.nH/2 - th - 6;
+    var tg = el('g', {});
+    var pill = el('rect', {x:tx, y:ty, width:tw, height:th, rx:'3',
+                           fill:actor.color, opacity:'0.92'});
+    var lbl  = el('text', {
+      x:tx+4, y:ty+th/2,
+      'font-family':'"Inter",system-ui,sans-serif',
+      'font-size':'7.5', 'font-weight':'bold',
+      fill:'#ffffff', 'dominant-baseline':'middle'
+    });
+    lbl.textContent = actor.name;
+    tg.appendChild(pill); tg.appendChild(lbl);
+    gTags.appendChild(tg);
+    svgTagEls[name] = tg;
+  });
+
+  /* boundary crossing highlights */
+  var gCross = svgGroups['crossings'];
+  while (gCross.firstChild) gCross.removeChild(gCross.firstChild);
+  SVG_ROUTES.forEach(function(route) {
+    for (var i=0; i<route.nodes.length-1; i++) {
+      var idA=route.nodes[i], idB=route.nodes[i+1];
+      var actA=SVG_NODE_ACTOR[idA], actB=SVG_NODE_ACTOR[idB];
+      if (!actA || !actB || actA===actB) continue;
+      var nA=SVGL.nodes[idA], nB=SVGL.nodes[idB];
+      if (!nA || !nB) continue;
+      var cp  = svgBezCP(nA, nB);
+      var mx  = 0.25*nA.cx + 0.5*cp.x + 0.25*nB.cx;
+      var my  = 0.25*nA.cy + 0.5*cp.y + 0.25*nB.cy;
+      /* first half */
+      var p1 = el('path', {
+        d:'M'+nA.cx+' '+nA.cy+' Q'+((nA.cx+cp.x)/2)+' '+((nA.cy+cp.y)/2)+' '+mx+' '+my,
+        fill:'none', stroke:actA.color, 'stroke-width':'2.5', 'stroke-opacity':'0.55'
+      });
+      /* second half */
+      var p2 = el('path', {
+        d:'M'+mx+' '+my+' Q'+((cp.x+nB.cx)/2)+' '+((cp.y+nB.cy)/2)+' '+nB.cx+' '+nB.cy,
+        fill:'none', stroke:actB.color, 'stroke-width':'2.5', 'stroke-opacity':'0.55'
+      });
+      /* diamond marker */
+      var ds=4;
+      var dm = el('path', {
+        d:'M'+mx+' '+(my-ds)+' L'+(mx+ds)+' '+my+' L'+mx+' '+(my+ds)+' L'+(mx-ds)+' '+my+' Z',
+        fill:'#ffffff', opacity:'0.9'
+      });
+      gCross.appendChild(p1); gCross.appendChild(p2); gCross.appendChild(dm);
+    }
+  });
+}
+
+/* ── packet SVG elements ─────────────────────────────────────────────────── */
+var svgPackets = [];
+var SVG_PACKET_ID = 0;
+var SVG_TRAIL_LEN = 14;
+var SVG_SEG_SPEED = 0.32;
+
+function svgSpawnRoute(ri) {
+  var route = SVG_ROUTES[ri];
+  if (route.nodes.length < 2) return;
+  var src = SVGL.nodes[route.nodes[0]];
+  if (!src) return;
+  var art = SVG_ARTIFACTS[route.art];
+  var gPkts = svgGroups['packets'];
+
+  /* trail polyline */
+  var trail = el('polyline', {
+    fill:'none', stroke:art.color, 'stroke-opacity':'0', 'stroke-width': art.size*0.7,
+    'stroke-linecap':'round', points:''
+  });
+  gPkts.appendChild(trail);
+
+  /* main shape */
+  var shape;
+  var ap = artPath(art);
+  if (ap) {
+    shape = el('path', {d:ap, fill:art.color, stroke:'rgba(255,255,255,0.7)', 'stroke-width':'1'});
+  } else {
+    shape = el('circle', {r:art.size, fill:art.color, stroke:'rgba(255,255,255,0.7)', 'stroke-width':'1'});
+  }
+  gPkts.appendChild(shape);
+
+  /* label */
+  var lbl = el('text', {
+    'font-family':'"Inter",system-ui,sans-serif', 'font-size':'7.5', 'font-weight':'bold',
+    fill:art.color, opacity:'0', 'text-anchor':'middle'
+  });
+  lbl.textContent = art.name;
+  gPkts.appendChild(lbl);
+
+  svgPackets.push({
+    id:       ++SVG_PACKET_ID,
+    routeIdx: ri,
+    nodeIdx:  0,
+    t:        0,
+    art:      art,
+    trailPts: [],
+    alpha:    0,
+    speed:    0.85 + Math.random()*0.30,
+    crossFlash:0,
+    /* DOM els */
+    trailEl: trail, shapeEl: shape, lblEl: lbl,
+  });
+}
+
+function svgRemovePacket(pk) {
+  [pk.trailEl, pk.shapeEl, pk.lblEl].forEach(function(e){
+    if (e && e.parentNode) e.parentNode.removeChild(e);
+  });
+}
+
+/* ── pulse state ─────────────────────────────────────────────────────────── */
+var svgPulses = {};  /* id → {intensity, xformAlpha, color, xform} */
+
+/* ── main animation tick ─────────────────────────────────────────────────── */
+var svgLastTime   = null;
+var svgRouteTimers = SVG_ROUTES.map(function(r){ return -r.delay; });
+
+function svgTick(ts) {
+  if (!svgRunning) return;
+  svgRAF = requestAnimationFrame(svgTick);
+
+  var dt = svgLastTime===null ? 0.016 : Math.min((ts-svgLastTime)/1000, 0.05);
+  svgLastTime = ts;
+
+  /* spawn */
+  SVG_ROUTES.forEach(function(route, ri) {
+    svgRouteTimers[ri] += dt;
+    if (svgRouteTimers[ri] >= route.interval) {
+      svgRouteTimers[ri] -= route.interval;
+      svgSpawnRoute(ri);
+    }
+  });
+
+  /* update packets */
+  var live = [];
+  svgPackets.forEach(function(pk) {
+    var route = SVG_ROUTES[pk.routeIdx];
+    var nA    = SVGL.nodes[route.nodes[pk.nodeIdx]];
+    var nB    = SVGL.nodes[route.nodes[pk.nodeIdx+1]];
+    pk.t += SVG_SEG_SPEED * pk.speed * dt;
+
+    var pos = null;
+    if (nA && nB) {
+      pos = svgBez(nA, nB, Math.min(pk.t, 1));
+      pk.trailPts.push({x:pos.x, y:pos.y});
+      if (pk.trailPts.length > SVG_TRAIL_LEN) pk.trailPts.shift();
+    }
+    if (pk.crossFlash > 0) pk.crossFlash = Math.max(0, pk.crossFlash - dt*2.5);
+
+    /* alpha fade */
+    var totalSegs = route.nodes.length - 1;
+    var tGlobal   = (pk.nodeIdx + pk.t) / totalSegs;
+    pk.alpha = tGlobal < 0.15 ? tGlobal/0.15
+             : tGlobal > 0.85 ? (1-tGlobal)/0.15 : 1;
+    pk.alpha = Math.max(0, Math.min(1, pk.alpha));
+
+    /* node arrival */
+    if (pk.t >= 1) {
+      var arrivedId   = route.nodes[pk.nodeIdx+1];
+      var arrivedNode = null;
+      SVG_LAYERS.forEach(function(l){ l.nodes.forEach(function(n){ if(n.id===arrivedId) arrivedNode=n; }); });
+      if (SVGL.nodes[arrivedId]) {
+        svgPulses[arrivedId] = {
+          intensity:  1.0, xformAlpha: 1.0,
+          color:      pk.art.color,
+          xform:      arrivedNode ? arrivedNode.xform : ''
+        };
+      }
+      /* boundary crossing flash */
+      if (svgShowBoundaries) {
+        var actA = SVG_NODE_ACTOR[route.nodes[pk.nodeIdx]];
+        var actB = SVG_NODE_ACTOR[route.nodes[pk.nodeIdx+1]];
+        if (actA && actB && actA !== actB) {
+          pk.crossFlash = 1.0;
+          pk.crossFlashColor = actB.color;
+        }
+      }
+      pk.nodeIdx++;
+      pk.t -= 1;
+      pk.trailPts = [];
+    }
+
+    if (pk.nodeIdx < route.nodes.length-1) {
+      live.push(pk);
+    } else {
+      svgRemovePacket(pk);
+    }
+  });
+  svgPackets = live;
+
+  /* decay pulses + update node visuals */
+  Object.keys(svgPulses).forEach(function(k) {
+    var p = svgPulses[k];
+    if (!p || p.intensity <= 0) return;
+    p.intensity  = Math.max(0, p.intensity  - dt*0.75);
+    if (p.xformAlpha===undefined) p.xformAlpha=1.0;
+    p.xformAlpha = Math.max(0, p.xformAlpha - dt*0.55);
+
+    var ne = svgNodeEls[k];
+    if (!ne) return;
+    var intens = p.intensity;
+
+    /* glow: boost fill-opacity and stroke-opacity */
+    setAttrs(ne.rect, {
+      'fill-opacity':  (0.14 + intens*0.22).toFixed(3),
+      'stroke-opacity':(0.55 + intens*0.40).toFixed(3),
+      'stroke-width':  (1.0  + intens*1.0 ).toFixed(2),
+    });
+
+    /* xform label */
+    var xa = p.xformAlpha;
+    if (xa > 0.02 && p.xform) {
+      var floatY = ne.y - 8 - (1-xa)*14;
+      /* measure text width approx */
+      var tw = ('\u2192 '+p.xform).length * 5.5 + 8;
+      setAttrs(ne.xbg, {x: ne.cx-tw/2, y: floatY-6, width:tw, height:13});
+      setAttrs(ne.xt,  {x: ne.cx, y: floatY, fill: p.color || ne.baseColor});
+      setAttrs(ne.xg,  {opacity: Math.min(xa,0.92).toFixed(3), visibility:'visible'});
+    } else {
+      setAttrs(ne.xg, {opacity:'0', visibility:'hidden'});
+      /* reset node rect */
+      setAttrs(ne.rect, {'fill-opacity':'0.14','stroke-opacity':'0.55','stroke-width':'1'});
+    }
+  });
+
+  /* update packet DOM */
+  svgPackets.forEach(function(pk) {
+    var route = SVG_ROUTES[pk.routeIdx];
+    var nA    = SVGL.nodes[route.nodes[pk.nodeIdx]];
+    var nB    = SVGL.nodes[route.nodes[pk.nodeIdx+1]];
+    if (!nA || !nB) return;
+    var pos = svgBez(nA, nB, Math.min(pk.t,1));
+    var art = pk.art;
+    var a   = pk.alpha;
+    var cf  = pk.crossFlash || 0;
+
+    /* color: lerp toward white on cross flash */
+    var drawColor = cf > 0 ? svgLerpColor(art.color, '#ffffff', cf) : art.color;
+
+    /* trail polyline */
+    var pts = pk.trailPts.map(function(p){ return p.x+','+p.y; }).join(' ');
+    setAttrs(pk.trailEl, {
+      points: pts,
+      stroke: art.color,
+      'stroke-opacity': (a * 0.35).toFixed(3),
+    });
+
+    /* main shape position */
+    if (art.shape === 'circle') {
+      setAttrs(pk.shapeEl, {cx:pos.x.toFixed(2), cy:pos.y.toFixed(2),
+                             fill:drawColor, opacity:a.toFixed(3)});
+    } else {
+      var tf = 'translate('+pos.x.toFixed(2)+','+pos.y.toFixed(2)+')';
+      setAttrs(pk.shapeEl, {transform:tf, fill:drawColor, opacity:a.toFixed(3)});
+    }
+
+    /* glow via filter when crossing */
+    if (cf > 0.1) {
+      pk.shapeEl.setAttribute('filter','url(#svg-glow)');
+    } else {
+      pk.shapeEl.removeAttribute('filter');
+    }
+
+    /* label */
+    setAttrs(pk.lblEl, {
+      x: pos.x.toFixed(2),
+      y: (pos.y - art.size - 3).toFixed(2),
+      opacity: a > 0.5 ? (a*0.95).toFixed(3) : '0'
+    });
+  });
+}
+
+function svgLerpColor(hexA, hexB, t) {
+  function h(hex,o,l){ return parseInt(hex.slice(o,o+l),16)||0; }
+  var r=Math.round(h(hexA,1,2)+(h(hexB,1,2)-h(hexA,1,2))*t);
+  var g=Math.round(h(hexA,3,2)+(h(hexB,3,2)-h(hexA,3,2))*t);
+  var b=Math.round(h(hexA,5,2)+(h(hexB,5,2)-h(hexA,5,2))*t);
+  return 'rgb('+r+','+g+','+b+')';
+}
+
+/* ── resize ─────────────────────────────────────────────────────────────── */
+function svgResize() {
+  var rect = svg.parentElement.getBoundingClientRect();
+  svgW = rect.width;
+  svgH = Math.max(520, Math.min(Math.round(svgW * 0.72), 740));
+  svg.setAttribute('width',  svgW);
+  svg.setAttribute('height', svgH);
+  svg.setAttribute('viewBox','0 0 '+svgW+' '+svgH);
+  svgComputeLayout();
+  buildSVGStructure();
+  populateBandsAndNodes();
+  populateConnectors();
+  populateHalos();
+}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+window.svgInfraToggle = function() {
+  svgRunning = !svgRunning;
+  var btn = document.getElementById('svg-infra-toggle');
+  if (svgRunning) {
+    btn.innerHTML = '&#9646;&#9646; Pause';
+    svgLastTime = null;
+    svgRAF = requestAnimationFrame(svgTick);
+  } else {
+    if (svgRAF) cancelAnimationFrame(svgRAF);
+    btn.innerHTML = '&#9654; Play';
+  }
+};
+
+window.svgBoundaryToggle = function() {
+  svgShowBoundaries = !svgShowBoundaries;
+  var btn = document.getElementById('svg-boundary-toggle');
+  btn.style.background = svgShowBoundaries ? 'var(--fg)' : 'var(--bg2)';
+  btn.style.color      = svgShowBoundaries ? 'var(--bg)' : 'var(--fg)';
+  populateHalos();
+};
+
+/* ── legend ─────────────────────────────────────────────────────────────── */
+function buildLegend() {
+  var legendEl = document.getElementById('infra-legend');
+  if (!legendEl) return;
+  legendEl.innerHTML = SVG_ARTIFACTS.map(function(a) {
+    var shape = '';
+    if (a.shape === 'diamond') {
+      shape = '<svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,1 11,6 6,11 1,6" fill="'+a.color+'"/></svg>';
+    } else if (a.shape === 'square') {
+      shape = '<svg width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" fill="'+a.color+'"/></svg>';
+    } else {
+      shape = '<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="'+a.color+'"/></svg>';
+    }
+    return '<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--fg2);">'
+         + shape + a.name + '</div>';
+  }).join('');
+}
+
+/* ── init ───────────────────────────────────────────────────────────────── */
+window.addEventListener('resize', svgResize);
+svgResize();
+buildLegend();
+/* pre-seed timers */
+SVG_ROUTES.forEach(function(r, i){ svgRouteTimers[i] = r.interval - r.delay; });
+svgRAF = requestAnimationFrame(svgTick);
+
+})(); // end SVG IIFE
+</script>
+</body>
+</html>

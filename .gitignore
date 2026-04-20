@@ -1,0 +1,18 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cloned source repositories (~11 GB, regenerable via 01_clone_repos.sh)
+repos/
+
+# Local editor / tooling state
+.claude/settings.local.json
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS cruft
+.DS_Store
+Thumbs.db

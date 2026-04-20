@@ -1,0 +1,51 @@
+
+════════════════════════════════════════════════════════════════════
+  Dependency Count — Tue Apr  7 18:31:44 CEST 2026
+════════════════════════════════════════════════════════════════════
+  Measured:              48 / 48
+  Skipped:               0
+  Elapsed:               00:00:02
+
+  Aggregate package counts (sum across all repos; packages shared
+  across repos may be counted more than once):
+  Direct dependencies:            4,664
+  Transitive dependencies:      11,508 
+
+  Counts by ecosystem:
+  Ecosystem       Direct  Transitive  Coverage
+  ─────────  ──────────  ──────────  ────────
+  python               0           0  manifest-only
+  go                   0           0  manifest-only
+  cargo                0           0  manifest-only
+  npm                  0           0  manifest-only
+  maven                0           0  manifest-only
+  gradle               0           0  manifest-only
+  cpp                  0           0  direct-only (no registry)
+
+  ─── Estimated transitive LOC (order-of-magnitude) ─────────────
+  Based on per-ecosystem median LOC/package (see script header).
+  Packages shared across repos are not de-duplicated — this is
+  an upper-bound estimate. Direct-repo LOC is measured, not estimated.
+
+  Ecosystem     Packages      Est. LOC  Avg LOC/pkg
+  ─────────  ────────  ────────  ───────────
+  python               0             0      5000  (direct only)
+  go                   0             0      8000  (direct only)
+  cargo                0             0      5000  (direct only)
+  npm                  0             0      1500  (direct only)
+  maven                0             0     15000  (direct only)
+  gradle               0             0     15000  (direct only)
+  cpp                  0             0         0  (direct only)
+  ─────────  ────────  ────────
+  TOTAL est.                         0
+
+  ⚠  This estimate covers transitive open-source dependencies only.
+     It excludes: proprietary code, OS/kernel, GPU drivers, cloud services.
+     See opaque_components in stack_config.yaml for those estimates.
+
+  Outputs:
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/deps_summary.csv
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/deps_per_project/  (per-project JSON cache)
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/deps_report.tsv
+    /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/deps_summary.txt
+════════════════════════════════════════════════════════════════════

@@ -1,0 +1,16 @@
+{
+  "repo": "microsoft/promptflow",
+  "layer": "integration_serving",
+  "status": "selected",
+  "ecosystems_detected": "python",
+  "direct_total": 0,
+  "transitive_total": 216,
+  "method": "python:uv_pip_compile",
+  "direct_deps": [],
+  "transitive_deps_python": [],
+  "transitive_deps_go": [],
+  "transitive_deps_cargo": [],
+  "transitive_deps_npm": [],
+  "transitive_deps_maven": [],
+  "transitive_deps_gradle": []
+}

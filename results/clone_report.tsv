@@ -1,0 +1,95 @@
+timestamp	status	layer	repo	role	reason	size_kb
+2026-04-01T16:29:15Z	success	data_pipelines	minio/minio	Object storage for datasets and model artifacts (S3-compatible)		64956
+2026-04-01T16:29:21Z	success	data_pipelines	apache/kafka	Stream ingestion and message brokering		117940
+2026-04-01T16:29:32Z	success	data_pipelines	apache/airflow	Workflow orchestration for data pipelines		282024
+2026-04-01T16:29:43Z	success	data_pipelines	apache/spark	Distributed data processing		317648
+2026-04-01T16:30:28Z	success	data_pipelines	HumanSignal/label-studio	Data annotation and labeling		993540
+2026-04-01T16:30:39Z	success	data_pipelines	great-expectations/great_expectations	Data validation and quality		358376
+2026-04-01T16:30:40Z	success	data_pipelines	iterative/dvc	Dataset versioning and lineage		5584
+2026-04-01T16:30:42Z	success	data_pipelines	UKPLab/sentence-transformers	Embedding model library for retrieval corpus construction		35028
+2026-04-01T16:30:47Z	success	data_pipelines	milvus-io/milvus	Vector database		127788
+2026-04-01T16:30:50Z	success	training	kubeflow/pipelines	ML workflow orchestration for training pipelines		114888
+2026-04-01T16:30:54Z	success	training	SchedMD/slurm	HPC cluster job scheduling		66320
+2026-04-01T16:30:59Z	success	training	NVIDIA/nvidia-container-toolkit	GPU-enabled container runtime support		266908
+2026-04-01T16:31:01Z	success	training	NVIDIA/cuda-python	GPU compute runtime (Python bindings for CUDA)		18456
+2026-04-01T16:31:02Z	success	training	NVIDIA/nccl	GPU communication primitives		10796
+2026-04-01T16:31:13Z	success	training	pytorch/pytorch	Core ML framework		293464
+2026-04-01T16:31:41Z	success	training	microsoft/DeepSpeed	Distributed training and optimization		465536
+2026-04-01T16:31:44Z	success	training	NVIDIA/Megatron-LM	Large-scale distributed training		55756
+2026-04-01T16:31:46Z	success	training	huggingface/tokenizers	Tokenizer library		8100
+2026-04-01T16:31:47Z	success	training	huggingface/datasets	Dataset loading and processing for training		8736
+2026-04-01T16:31:50Z	success	training	huggingface/peft	Parameter-efficient fine-tuning (LoRA, QLoRA)		35560
+2026-04-01T16:31:51Z	success	training	huggingface/trl	Alignment fine-tuning (SFT, DPO, RLHF)		9992
+2026-04-01T16:31:53Z	success	training	EleutherAI/lm-evaluation-harness	Model evaluation framework		79592
+2026-04-01T16:31:54Z	success	training	arcee-ai/mergekit	Model checkpoint merging		1648
+2026-04-01T16:32:17Z	success	training	mlflow/mlflow	Experiment tracking and model registry		571740
+2026-04-01T16:32:19Z	success	training	huggingface/huggingface_hub	Model registry and distribution platform		8088
+2026-04-01T16:32:25Z	success	training	huggingface/transformers	Model library and pretrained weights		115904
+2026-04-01T16:32:27Z	success	integration_serving	onnx/onnx	Model interchange format		89256
+2026-04-01T16:32:43Z	success	integration_serving	mit-han-lab/llm-awq	Post-training quantization		368736
+2026-04-01T16:32:48Z	success	integration_serving	vllm-project/vllm	LLM inference engine		108700
+2026-04-01T16:32:58Z	success	integration_serving	NVIDIA/TensorRT-LLM	LLM inference engine (Triton backend)		278772
+2026-04-01T16:33:00Z	success	integration_serving	triton-inference-server/server	Multi-framework inference server		33448
+2026-04-01T16:33:34Z	success	integration_serving	microsoft/onnxruntime	Cross-platform inference runtime		913844
+2026-04-01T16:34:00Z	success	integration_serving	ray-project/ray	Distributed computing and model serving		586344
+2026-04-01T16:34:09Z	success	integration_serving	envoyproxy/envoy	API gateway and service proxy		232456
+2026-04-01T16:34:13Z	success	integration_serving	langchain-ai/langchain	LLM application orchestration		59160
+2026-04-01T16:34:25Z	success	integration_serving	microsoft/promptflow	Prompt versioning and pipeline management		382900
+2026-04-01T16:34:27Z	success	integration_serving	guardrails-ai/guardrails	Output validation and guardrails		25064
+2026-04-01T16:34:37Z	success	cross_cutting	kubernetes/kubernetes	Container orchestration		405544
+2026-04-01T16:34:41Z	success	cross_cutting	containerd/containerd	Container runtime		88708
+2026-04-01T16:34:43Z	success	cross_cutting	hashicorp/terraform	Infrastructure provisioning		56928
+2026-04-01T16:34:50Z	success	cross_cutting	argoproj/argo-cd	GitOps continuous delivery		153500
+2026-04-01T16:34:53Z	success	cross_cutting	argoproj/argo-workflows	Workflow engine for CI/CD and ML pipelines		96516
+2026-04-01T16:34:54Z	success	cross_cutting	prometheus/prometheus	Metrics collection and alerting		39016
+2026-04-01T16:35:03Z	success	cross_cutting	grafana/grafana	Observability dashboards		294228
+2026-04-01T16:35:05Z	success	cross_cutting	open-telemetry/opentelemetry-collector	Distributed tracing and telemetry		21016
+2026-04-01T16:35:18Z	success	cross_cutting	grafana/loki	Log aggregation		582048
+2026-04-07T16:30:27Z	already_done	data_pipelines	minio/minio	Object storage for datasets and model artifacts (S3-compatible)		64956
+2026-04-07T16:30:27Z	already_done	data_pipelines	apache/kafka	Stream ingestion and message brokering		118508
+2026-04-07T16:30:27Z	already_done	data_pipelines	apache/airflow	Workflow orchestration for data pipelines		282024
+2026-04-07T16:30:27Z	already_done	data_pipelines	apache/spark	Distributed data processing		317720
+2026-04-07T16:30:27Z	already_done	data_pipelines	HumanSignal/label-studio	Data annotation and labeling		993540
+2026-04-07T16:30:28Z	already_done	data_pipelines	great-expectations/great_expectations	Data validation and quality		358492
+2026-04-07T16:30:28Z	already_done	data_pipelines	iterative/dvc	Dataset versioning and lineage		5584
+2026-04-07T16:30:28Z	already_done	data_pipelines	UKPLab/sentence-transformers	Embedding model library for retrieval corpus construction		35028
+2026-04-07T16:30:28Z	already_done	data_pipelines	milvus-io/milvus	Vector database		127788
+2026-04-07T16:30:28Z	already_done	training	kubeflow/pipelines	ML workflow orchestration for training pipelines		114920
+2026-04-07T16:30:28Z	already_done	training	SchedMD/slurm	HPC cluster job scheduling		66320
+2026-04-07T16:30:28Z	already_done	training	NVIDIA/nvidia-container-toolkit	GPU-enabled container runtime support		266916
+2026-04-07T16:30:28Z	already_done	training	NVIDIA/cuda-python	GPU compute runtime (Python bindings for CUDA)		18484
+2026-04-07T16:30:28Z	already_done	training	NVIDIA/nccl	GPU communication primitives		10796
+2026-04-07T16:30:28Z	already_done	training	pytorch/pytorch	Core ML framework		296492
+2026-04-07T16:30:28Z	already_done	training	microsoft/DeepSpeed	Distributed training and optimization		466164
+2026-04-07T16:30:28Z	already_done	training	NVIDIA/Megatron-LM	Large-scale distributed training		55756
+2026-04-07T16:30:28Z	already_done	training	huggingface/tokenizers	Tokenizer library		8140
+2026-04-07T16:30:28Z	already_done	training	huggingface/datasets	Dataset loading and processing for training		8788
+2026-04-07T16:30:28Z	already_done	training	huggingface/peft	Parameter-efficient fine-tuning (LoRA, QLoRA)		35604
+2026-04-07T16:30:28Z	already_done	training	huggingface/trl	Alignment fine-tuning (SFT, DPO, RLHF)		9992
+2026-04-07T16:30:28Z	already_done	training	EleutherAI/lm-evaluation-harness	Model evaluation framework		79592
+2026-04-07T16:30:28Z	already_done	training	arcee-ai/mergekit	Model checkpoint merging		1648
+2026-04-07T16:30:28Z	already_done	training	mlflow/mlflow	Experiment tracking and model registry		571740
+2026-04-07T16:30:28Z	already_done	training	huggingface/huggingface_hub	Model registry and distribution platform		8136
+2026-04-07T16:30:28Z	already_done	training	huggingface/transformers	Model library and pretrained weights		116108
+2026-04-07T16:30:28Z	already_done	integration_serving	onnx/onnx	Model interchange format		89972
+2026-04-07T16:30:28Z	already_done	integration_serving	mit-han-lab/llm-awq	Post-training quantization		368736
+2026-04-07T16:30:28Z	already_done	integration_serving	vllm-project/vllm	LLM inference engine		108792
+2026-04-07T16:30:28Z	already_done	integration_serving	NVIDIA/TensorRT-LLM	LLM inference engine (Triton backend)		278772
+2026-04-07T16:30:28Z	already_done	integration_serving	triton-inference-server/server	Multi-framework inference server		33468
+2026-04-07T16:30:28Z	already_done	integration_serving	microsoft/onnxruntime	Cross-platform inference runtime		913852
+2026-04-07T16:30:28Z	already_done	integration_serving	ray-project/ray	Distributed computing and model serving		586344
+2026-04-07T16:30:28Z	already_done	integration_serving	envoyproxy/envoy	API gateway and service proxy		232456
+2026-04-07T16:30:28Z	already_done	integration_serving	langchain-ai/langchain	LLM application orchestration		59160
+2026-04-07T16:30:29Z	already_done	integration_serving	microsoft/promptflow	Prompt versioning and pipeline management		382924
+2026-04-07T16:30:29Z	already_done	integration_serving	guardrails-ai/guardrails	Output validation and guardrails		25064
+2026-04-07T16:30:29Z	already_done	cross_cutting	kubernetes/kubernetes	Container orchestration		405544
+2026-04-07T16:30:29Z	already_done	cross_cutting	containerd/containerd	Container runtime		88708
+2026-04-07T16:30:29Z	already_done	cross_cutting	hashicorp/terraform	Infrastructure provisioning		56928
+2026-04-07T16:30:29Z	already_done	cross_cutting	argoproj/argo-cd	GitOps continuous delivery		153500
+2026-04-07T16:30:29Z	already_done	cross_cutting	argoproj/argo-workflows	Workflow engine for CI/CD and ML pipelines		96516
+2026-04-07T16:30:29Z	already_done	cross_cutting	prometheus/prometheus	Metrics collection and alerting		39028
+2026-04-07T16:30:29Z	already_done	cross_cutting	grafana/grafana	Observability dashboards		294228
+2026-04-07T16:30:29Z	already_done	cross_cutting	open-telemetry/opentelemetry-collector	Distributed tracing and telemetry		21016
+2026-04-07T16:30:29Z	already_done	cross_cutting	grafana/loki	Log aggregation		582048
+2026-04-07T16:31:02Z	success	cross_cutting	torvalds/linux	Operating system kernel		2066264
+2026-04-07T16:31:07Z	success	cross_cutting	NVIDIA/open-gpu-kernel-modules	Open-source NVIDIA GPU kernel driver		157408

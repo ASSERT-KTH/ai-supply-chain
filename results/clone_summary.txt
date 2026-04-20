@@ -1,0 +1,36 @@
+
+════════════════════════════════════════════════════════════════════
+  Clone run — Tue Apr  7 18:31:07 CEST 2026
+════════════════════════════════════════════════════════════════════
+  Processed:           48 / 48
+  Newly cloned:        2
+  Already done:        46
+  Failed:              0
+  Elapsed:             00:00:40
+
+  Disk usage by layer:
+    data_pipelines               2249 MB
+    training                     2085 MB
+    integration_serving          3007 MB
+    cross_cutting                3868 MB
+    TOTAL                       11210 MB
+
+  Largest repos (top 8):
+      2017 MB  linux
+       970 MB  label-studio
+       892 MB  onnxruntime
+       572 MB  ray
+       568 MB  loki
+       558 MB  mlflow
+       455 MB  DeepSpeed
+       396 MB  kubernetes
+
+  Repos cloned per layer:
+    data_pipelines             9
+    training                   17
+    integration_serving        11
+    cross_cutting              11
+
+  Log (all runs) : /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/clone_report.tsv
+  This summary   : /home/carmine/papers/CACM-AI-Software-Supply-Chain/supply-chain-size/results/clone_summary.txt
+════════════════════════════════════════════════════════════════════

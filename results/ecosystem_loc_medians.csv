@@ -1,0 +1,7 @@
+ecosystem,n_projects,loc_per_pkg_median,loc_per_pkg_mean,loc_per_pkg_min,loc_per_pkg_max,project_list
+go,14,2634,4153,333,16209,minio;milvus;pipelines;nvidia-container-toolkit;envoy;kubernetes;containerd;terraform;argo-cd;argo-workflows;prometheus;grafana;opentelemetry-collector;loki
+gradle,1,4704,4704,4704,4704,kafka
+maven,1,7653,7653,7653,7653,spark
+npm,1,4568,4568,4568,4568,grafana
+python,31,5532,58301,144,1010302,kafka;airflow;spark;label-studio;great_expectations;dvc;sentence-transformers;pipelines;cuda-python;nccl;pytorch;DeepSpeed;Megatron-LM;tokenizers;datasets;peft;trl;lm-evaluation-harness;mergekit;mlflow;huggingface_hub;transformers;onnx;llm-awq;vllm;TensorRT-LLM;onnxruntime;envoy;langchain;promptflow;guardrails
+rust,1,11894,11894,11894,11894,envoy
