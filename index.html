@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Software Supply chain of AI Systems: Software Stack Measurement</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Software Supply Chain of AI Systems: Software Stack Measurement</title>
 <style>
   :root {
     --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eae9e4;
@@ -35,9 +36,12 @@
   .wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 2rem; }
 
   /* Header */
-  .hdr { text-align: center; margin-bottom: 0.75rem; }
-  .hdr h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
-  .hdr p { font-size: 13px; color: var(--fg2); margin-top: 4px; }
+  .hdr { text-align: center; margin-bottom: 1.25rem; }
+  .hdr h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.4px; }
+  .hdr p { font-size: 13px; color: var(--fg2); margin-top: 4px; margin-bottom: 10px; }
+  .hdr-authors { font-weight: 600; font-size: 14px; color: var(--fg); margin-bottom: 4px; }
+  .hdr-org { font-style: italic; font-size: 11px; color: var(--fg2); margin-bottom: 4px; }
+  .hdr-email { font-size: 10px; color: var(--fg3); font-style: normal; }
 
   /* Status bar */
   .status-bar { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 1rem; }
@@ -220,8 +224,11 @@
 <body>
 <div class="wrap">
   <div class="hdr">
-    <h1>The Grand Size of the AI Supply Chain</h1>
+    <h1>The Grand Size of the AI Supply Chain 🔗</h1>
     <p>Quantifying the hidden software complexity behind compound AI systems</p>
+    <div class="hdr-authors">Carmine Cesarano and Martin Monperrus</div>
+    <div class="hdr-org">KTH Royal Institute of Technology</div>
+    <div class="hdr-email">{cesarano, monperrus}@kth.se</div>
   </div>
 
   <div class="status-bar" id="status-bar"></div>
@@ -347,8 +354,7 @@
   </div>
 
   <div class="footer">
-    Serve from project root: <code>python3 -m http.server</code> then open <code>http://localhost:8000/dashboard.html</code><br>
-    The dashboard auto-loads all result files. Or use the manual loader above.
+    © 2026 KTH Royal Institute of Technology. All rights reserved.
   </div>
 </div>
 
