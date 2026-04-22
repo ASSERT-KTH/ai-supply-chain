@@ -874,18 +874,19 @@ function renderMetrics() {
     '</div>';
 
   // Secondary stats
-  function mc(v, l, tip) {
+  function mc(v, l, tip, exact) {
     var cls = v ? '' : ' ph';
     var label = tip ? '<span class="tip" data-tip="' + tip + '">' + l + '</span>' : l;
-    return '<div class="mc"><div class="mc-val' + cls + '">' + (v ? fmt(v) : '\u00b7\u00b7\u00b7') + '</div><div class="mc-label">' + label + '</div></div>';
+    var valStr = v ? (exact ? parseInt(v, 10).toLocaleString() : fmt(v)) : '\u00b7\u00b7\u00b7';
+    return '<div class="mc"><div class="mc-val' + cls + '">' + valStr + '</div><div class="mc-label">' + label + '</div></div>';
   }
   el.innerHTML =
     mc(nProjects || null, 'open-source projects measured',
       'Number of open-source repositories included in the stack across all four infrastructure layers.') +
     mc(totalDirect || null, 'direct packages declared',
-      'Packages explicitly listed in manifests (go.mod, requirements.txt, package.json, pom.xml, \u2026) across all measured projects.') +
+      'Packages explicitly listed in manifests (go.mod, requirements.txt, package.json, pom.xml, \u2026) across all measured projects.', true) +
     mc(totalTrans || null, 'transitive packages resolved',
-      'Full recursive closure of all dependencies. Excludes projects where the resolver could not run.');
+      'Full recursive closure of all dependencies. Excludes projects where the resolver could not run.', true);
 
 }
 
@@ -1055,8 +1056,8 @@ function renderLayers() {
       '</div></div>' +
       '<div class="l-stats">' +
         '<div class="l-stat"><span class="tip" data-tip="Source lines of code measured by scc, excluding blank lines and comments.">Direct LOC</span> <span>' + (layerLOC > 0 ? fmt(layerLOC) : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
-        '<div class="l-stat"><span class="tip" data-tip="Packages explicitly declared in manifests (requirements.txt, go.mod, package.json, etc.)">Direct Deps</span> <span>' + (layerDirect > 0 ? fmt(layerDirect) : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
-        '<div class="l-stat"><span class="tip" data-tip="Full transitive closure: all packages recursively required, not just those listed in the manifest.">Transitive Deps</span> <span>' + (layerTrans > 0 ? fmt(layerTrans) : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
+        '<div class="l-stat"><span class="tip" data-tip="Packages explicitly declared in manifests (requirements.txt, go.mod, package.json, etc.)">Direct Deps</span> <span>' + (layerDirect > 0 ? layerDirect.toLocaleString() : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
+        '<div class="l-stat"><span class="tip" data-tip="Full transitive closure: all packages recursively required, not just those listed in the manifest.">Transitive Deps</span> <span>' + (layerTrans > 0 ? layerTrans.toLocaleString() : '<span class="ph">\u00b7\u00b7\u00b7</span>') + '</span></div>' +
         '<div class="l-stat"><span class="tip" data-tip="Transitive \u00f7 direct: how many packages are pulled in for each one explicitly declared. Higher means greater hidden exposure.">Ratio</span> <span>' + (ratio !== null ? ratio + '\u00d7' : '<span class="ph">\u00b7\u00b7\u00b7\u00d7</span>') + '</span></div>' +
       '</div>' +
       '<div class="dep-bar-wrap">' +
