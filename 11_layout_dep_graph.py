@@ -664,7 +664,7 @@ class LayoutApp:
         # Frames match the user-drawn layer boxes (self.layer_boxes),
         # so the exported figure has the same frame geometry as the editor.
         layer_labels = {
-            "data_pipelines": "Data Production",
+            "data_pipelines": "Data Acquisition",
             "training": "Model Training",
             "integration_serving": "Integration & Inference",
             "cross_cutting": "Cross-Cutting Substrate",
