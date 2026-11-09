@@ -16,6 +16,7 @@ The result is an interactive dashboard showing the true scope of the AI software
 ## Project Structure
 
 ```
+├── project-selection-prompt.md    # LLM prompt used to propose the projects in stack_config.yaml
 ├── stack_config.yaml              # Configuration: selected repos and alternatives by layer
 ├── stack_lock.yaml                # Pinned commit SHAs for reproducible measurement (auto-generated)
 ├── 00_freeze_versions.sh          # Snapshot exact commit SHAs
@@ -322,6 +323,12 @@ If not served over HTTP, manually load result CSVs and JSONs:
 - `shared_deps_report.csv`
 - `loc_per_project/` (folder of JSONs)
 - `deps_per_project/` (folder of JSONs)
+
+## Project Selection
+
+The projects in `stack_config.yaml` were proposed by a large language model (Claude Opus 5.5) using the prompt in [`project-selection-prompt.md`](project-selection-prompt.md). The prompt asks the model to fill each functional role of the four layers with open-source projects and to give, for each one, a reference supporting its production use in AI or ML.
+
+All 48 selected projects come from the model's proposals. The authors reviewed every proposal: a project was retained only if its production use could be verified through a primary source (the `usage_ref` field), and every functional role had to be covered by at least one retained project.
 
 ## Configuration: stack_config.yaml
 
