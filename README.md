@@ -326,9 +326,9 @@ If not served over HTTP, manually load result CSVs and JSONs:
 
 ## Project Selection
 
-The projects in `stack_config.yaml` were proposed by a large language model (Claude Opus 5.5) using the prompt in [`project-selection-prompt.md`](project-selection-prompt.md). The prompt asks the model to fill each functional role of the four layers with open-source projects and to give, for each one, a reference supporting its production use in AI or ML.
+We asked Claude Opus 4.6 to suggest candidate open-source projects for each functional role across the four layers and to provide references supporting their use in production. The repository includes the [project-selection prompt](project-selection-prompt.md).
 
-All 48 selected projects come from the model's proposals. The authors reviewed every proposal: a project was retained only if its production use could be verified through a primary source (the `usage_ref` field), and every functional role had to be covered by at least one retained project.
+We retained projects whose production use we could verify through a primary source and checked that the selection covered every functional role. The `usage_ref` field in [`stack_config.yaml`](stack_config.yaml) records the supporting reference for each of the 48 selected projects.
 
 ## Configuration: stack_config.yaml
 
